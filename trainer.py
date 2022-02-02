@@ -115,9 +115,9 @@ class Trainer:
         log_dir = os.path.join(output_dir, 'logs')
         log_example_dir = os.path.join(log_dir, 'train_examples')
         os.makedirs(weight_dir, exist_ok=True)
-        os.path.exists(log_example_dir) and shutil.rmtree(log_example_dir)
-        infer_dir = os.path.join(log_dir, 'infer')
-        os.path.exists(infer_dir) and shutil.rmtree(infer_dir)
+        # os.path.exists(log_example_dir) and shutil.rmtree(log_example_dir)
+        # infer_dir = os.path.join(log_dir, 'infer')
+        # os.path.exists(infer_dir) and shutil.rmtree(infer_dir)
         os.makedirs(infer_dir, exist_ok=True)
         os.makedirs(log_example_dir, exist_ok=True)
 
