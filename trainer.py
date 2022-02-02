@@ -118,7 +118,7 @@ class Trainer:
         # os.path.exists(log_example_dir) and shutil.rmtree(log_example_dir)
         # infer_dir = os.path.join(log_dir, 'infer')
         # os.path.exists(infer_dir) and shutil.rmtree(infer_dir)
-        os.makedirs(infer_dir, exist_ok=True)
+        # os.makedirs(infer_dir, exist_ok=True)
         os.makedirs(log_example_dir, exist_ok=True)
 
         self.init_logger(log_dir)
