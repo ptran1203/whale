@@ -38,6 +38,7 @@ def main(args):
     df = pd.read_csv('train_kfold.csv')
     train_df = df[df.fold != args.fold]
     val_df = df[df.fold == args.fold]
+    val_df = val_df[val_df.label.isin(train_df.label.unique())]
 
     print(f'Train={len(train_df)}, validate={len(val_df)}')
 
