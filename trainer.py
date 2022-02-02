@@ -150,7 +150,7 @@ class Trainer:
 
         for epoch in range(start_epoch, epochs):
             train_scores = self.run_epoch(train_loader)
-            test_score, (tp, fp, fn) = run_test(self.model, self.device, test_imgs, cfg.img_size)
+            test_scores = self.run_epoch(val_loader, is_train=False)
 
             lr = self.optim.param_groups[0]["lr"]
 
@@ -159,8 +159,7 @@ class Trainer:
 
             msg = [f"Epoch {epoch + 1}/{epochs} (lr={lr:.5f})\nTrain "]
             msg += [f"{k}: {v:.5f}" for k, v in train_scores.items()]
-
-            msg+= [f"F1={test_score:.5f}, TP={tp}, FP={fp}, FN={fn}"]
+            msg += ["\nVal "] + [f"{k}: {v:.5f}" for k, v in test_scores.items()]
             msg = ", ".join(msg)
             self.logger.info(msg)
             print(msg)
@@ -191,6 +190,4 @@ class Trainer:
             }, last_ckp)
 
         self.logger.info(f"Training is completed, elapsed: {(time.time() - start):.3f}s")
-        test_score, (tp, fp, fn) = run_test(self.model, self.device, test_imgs, cfg.img_size, infer_dir, plot=True)
-        print(f"Final score: {test_score:.4f}, TP={tp}, FP={fp}, FN={fn}, best score: {self.best_score:.4f}")
-        return test_score
+        return self.best_score

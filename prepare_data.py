@@ -1,25 +1,17 @@
-import os
-import shutil
-from glob import glob
+import pandas as pd
+from sklearn.model_selection import StratifiedKFold
 
-# for img in glob(f'stamp_comp/Sorted_data1/*/*'):
-#     if img.endswith('l.png') or img.endswith('r.png'):
-#         os.remove(img)
+df = pd.read_csv('train.csv')
 
-for di in os.listdir('stamp_comp/Sorted_data1'):
-    if di == '.DS_Store':
-        os.remove(f'stamp_comp/Sorted_data1/{di}')
-    elif not os.listdir(f'stamp_comp/Sorted_data1/{di}'):
-        os.rmdir(f'stamp_comp/Sorted_data1/{di}')
 
-data_dir = 'stamp_comp/data_collect_invoice'
+gkf = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
 
-for imgr in glob(f'{data_dir}/right/*'):
-    imgl = imgr.replace("/right", "/left").replace("r.", "l.")
-    assert os.path.exists(imgl), imgl
-    label = os.path.basename(imgl).split(".")[0][:-1] + "_invoice"
-    print(label)
-    dest_dir = f'stamp_comp/Sorted_data1/{label}'
-    os.makedirs(dest_dir, exist_ok=True)
-    shutil.copy(imgr, f'{dest_dir}/{os.path.basename(imgr)}')
-    shutil.copy(imgl, f'{dest_dir}/{os.path.basename(imgl)}')
+df['fold'] = -1
+
+for i, (_, idx) in enumerate(gkf.split(df, df.species)):
+    df.loc[idx, 'fold'] = i
+
+
+print(df.fold.value_counts())
+df.to_csv('train_kfold.csv', index=False)
+

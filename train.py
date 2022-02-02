@@ -1,5 +1,5 @@
 from model import Net
-from dataloader import StampDataset, train_transform, val_transform
+from dataloader import WhaleDataset, train_transform, val_transform
 from trainer import Trainer
 from torch.utils.data import DataLoader
 from madgrad import MADGRAD
@@ -25,25 +25,37 @@ def parseargs():
     parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--img_size", type=int, default=256)
     parser.add_argument("--init_lr", type=float, default=1e-3)
+    parser.add_argument("--fold", type=int, default=0)
     parser.add_argument("--outdir", type=str, default="runs/exp")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--amp", action="store_true")
-    parser.add_argument("--test_img_dir", type=str, default='stamp_comp/img_test_20210118')
+    parser.add_argument("--nrows", default=0, type=int)
+    parser.add_argument("--img_dir", type=str, default='/content/jpeg-happywhale-384x384/train_images-384-384')
 
     return parser.parse_args()
 
 def main(args):
-    dataset = StampDataset('stamp_comp/Sorted_data1', args.img_size, transform=train_transform)
+    df = pd.read_csv('train_kfold.csv')
+
+    train_df = df[df.fold != args.fold]
+    val_df = df[df.fold == args.fold]
+
+    print(f'Train={len(train_df)}, validate={len(val_df)}')
+
+    dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=train_transform)
+    val_data = WhaleDataset(train_df, args., args.img_size, transform=val_transform)
 
     train_loader = DataLoader(dataset, batch_size=args.batch_size,
-        pin_memory=True, num_workers=2, shuffle=True, drop_last=True)
+        pin_memory=True, num_workers=2, shuffle=True)
+    val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
+
     model = Net(args.backbone, dataset.n_classes, pretrained=True)
 
     optimizer = optim.Adam(model.parameters(), lr=args.init_lr)
     # optimizer = MADGRAD(model.parameters(), lr=args.init_lr)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
     trainer = Trainer(model, optimizer, scheduler=scheduler, cfg=args)
-    trainer.train(train_loader, cfg=args)
+    trainer.train(train_loader, val_loader, cfg=args)
 
 if __name__ == '__main__':
     init_seeds()
