@@ -49,7 +49,7 @@ def main(args):
         pin_memory=True, num_workers=2, shuffle=True)
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
 
-    model = Net(args.backbone, dataset.n_classes, pretrained=True)
+    model = Net(args.backbone, train_df.individual_id.nunique(), pretrained=True)
 
     optimizer = optim.Adam(model.parameters(), lr=args.init_lr)
     # optimizer = MADGRAD(model.parameters(), lr=args.init_lr)
