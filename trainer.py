@@ -14,7 +14,7 @@ import cv2
 import torch.cuda.amp as amp
 import logging
 from dataloader import val_transform
-from test import build_test_imgs, run_test
+# from test import build_test_imgs, run_test
 
 def denorm(img):
     mean = np.array([0.485, 0.456, 0.406])
@@ -113,8 +113,6 @@ class Trainer:
         os.makedirs(infer_dir, exist_ok=True)
         os.makedirs(log_example_dir, exist_ok=True)
 
-        test_imgs = build_test_imgs(cfg.test_img_dir)
-        
         self.init_logger(log_dir)
         early_stop_counter = 0
 
