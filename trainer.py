@@ -95,7 +95,7 @@ class Trainer:
                 # Compute metric score
                 pred = torch.softmax(logit.detach(), dim=-1)
                 print(pred)
-                pred_label = torch.argmax(pred)
+                pred_label = torch.argmax(pred, dim=-1)
                 print(pred_label)
                 acc = (pred == labels).mean()
                 print(acc)
