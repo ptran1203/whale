@@ -27,7 +27,7 @@ class WhaleDataset(Dataset):
         return torch.from_numpy(img.transpose(2, 0 , 1)), torch.tensor(label)
 
     def __len__(self):
-        return len(self.data)
+        return len(self.df)
 
 
 train_transform = A.Compose([
