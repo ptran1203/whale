@@ -72,7 +72,7 @@ class Trainer:
                 images = images.to(self.device)
                 labels = labels.to(self.device)
 
-                print(labels)
+                # print(labels)
                 
                 if self.cfg.amp:
                     with amp.autocast():
