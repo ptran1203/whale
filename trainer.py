@@ -96,8 +96,9 @@ class Trainer:
                 pred = torch.softmax(logit.detach(), dim=-1)
                 pred_label = torch.argmax(pred, dim=-1).cpu().numpy()
                 acc = (pred_label == labels.cpu().numpy()).mean()
-                msg_loss = f"loss: {loss.item():.4f} - acc: {acc:.4f}"
-                bar.set_description(msg_loss)
+                if is_train:
+                    msg_loss = f"loss: {loss.item():.4f} - acc: {acc:.4f}"
+                    bar.set_description(msg_loss)
                 scores["loss"].append(loss.item())
                 scores["acc"].append(acc)
 
