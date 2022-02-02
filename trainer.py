@@ -93,6 +93,12 @@ class Trainer:
                         self.optim.step()
 
                 # Compute metric score
+                pred = torch.softmax(logit.detach(), dim=-1)
+                print(pred)
+                pred_label = torch.argmax(pred)
+                print(pred_label)
+                acc = (pred == labels).mean()
+                print(acc)
                 msg_loss = f"loss: {loss.item():.4f}"
                 bar.set_description(msg_loss)
                 scores["loss"].append(loss.item())
