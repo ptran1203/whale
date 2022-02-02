@@ -71,6 +71,9 @@ class Trainer:
             for images, labels in bar:
                 images = images.to(self.device)
                 labels = labels.to(self.device)
+
+                print(labels)
+                exit(0)
                 
                 if self.cfg.amp:
                     with amp.autocast():
