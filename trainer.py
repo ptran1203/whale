@@ -94,14 +94,12 @@ class Trainer:
 
                 # Compute metric score
                 pred = torch.softmax(logit.detach(), dim=-1)
-                print(pred)
-                pred_label = torch.argmax(pred, dim=-1)
-                print(pred_label)
-                acc = (pred == labels).mean()
-                print(acc)
-                msg_loss = f"loss: {loss.item():.4f}"
+                pred_label = torch.argmax(pred, dim=-1).cpu().numpy()
+                acc = (pred_label == labels.cpu().numpy()).mean()
+                msg_loss = f"loss: {loss.item():.4f} - acc: {acc:.4f}"
                 bar.set_description(msg_loss)
                 scores["loss"].append(loss.item())
+                scores["acc"].append(acc)
 
         scores = {k: (np.mean(v) if isinstance(v, list) else v) for k, v in scores.items()}
         
