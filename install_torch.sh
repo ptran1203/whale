@@ -1,0 +1,1 @@
+pip3 install torch==1.10.0 torchvision==0.11.1 -f https://download.pytorch.org/whl/cu113/torch_stable
