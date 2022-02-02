@@ -2,7 +2,6 @@ from model import Net
 from dataloader import WhaleDataset, train_transform, val_transform
 from trainer import Trainer
 from torch.utils.data import DataLoader
-from madgrad import MADGRAD
 import torch.optim as optim
 import argparse
 import random

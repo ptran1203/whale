@@ -1,4 +1,4 @@
-albumentations
+albumentations==1.1.0
 numpy
 opencv-python==4.5.5.62
 opencv-python-headless==4.5.5.62
