@@ -36,7 +36,6 @@ def parseargs():
 
 def main(args):
     df = pd.read_csv('train_kfold.csv')
-
     train_df = df[df.fold != args.fold]
     val_df = df[df.fold == args.fold]
 
@@ -49,10 +48,9 @@ def main(args):
         pin_memory=True, num_workers=2, shuffle=True)
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
 
-    model = Net(args.backbone, train_df.individual_id.nunique(), pretrained=True)
+    model = Net(args.backbone, train_df.label.nunique(), pretrained=True)
 
     optimizer = optim.Adam(model.parameters(), lr=args.init_lr)
-    # optimizer = MADGRAD(model.parameters(), lr=args.init_lr)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
     trainer = Trainer(model, optimizer, scheduler=scheduler, cfg=args)
     trainer.train(train_loader, val_loader, cfg=args)

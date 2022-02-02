@@ -16,7 +16,7 @@ class WhaleDataset(Dataset):
 
     def __getitem__(self, index):
         row = self.df.iloc[index]
-        img_path, label = row['img_path'], row['individual_id']
+        img_path, label = row['img_path'], row['label']
         img = cv2.imread(img_path)
         assert img is not None, img_path
         img = cv2.resize(img[:, :, ::-1], (self.img_size, self.img_size))
