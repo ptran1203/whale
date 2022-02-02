@@ -49,8 +49,8 @@ def main(args):
         pin_memory=True, num_workers=2, shuffle=True)
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
 
-    print('nlabel=', train_df.label.nunique())
-    model = Net(args.backbone, train_df.label.nunique(), pretrained=True)
+    print('nlabel=', df.label.nunique())
+    model = Net(args.backbone, df.label.nunique(), pretrained=True)
 
     optimizer = optim.Adam(model.parameters(), lr=args.init_lr)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
