@@ -10,10 +10,9 @@ class WhaleDataset(Dataset):
 
     def __init__(self, train_df, img_dir, img_size=256, transform=None):
         self.df = train_df
-        self.img_dir = img_dir
         self.transform = transform
         self.img_size = img_size
-        self.df['img_path'] = self.df.image.apply(lambda x: os.path.join(self.img_dir, x))
+        self.df['img_path'] = self.df['image'].apply(lambda x: os.path.join(img_dir, x))
 
     def __getitem__(self, index):
         row = self.df.iloc[index]
