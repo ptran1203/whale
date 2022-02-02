@@ -43,7 +43,7 @@ def main(args):
     print(f'Train={len(train_df)}, validate={len(val_df)}')
 
     dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=train_transform)
-    val_data = WhaleDataset(train_df, args., args.img_size, transform=val_transform)
+    val_data = WhaleDataset(train_df, args.img_dir, args.img_size, transform=val_transform)
 
     train_loader = DataLoader(dataset, batch_size=args.batch_size,
         pin_memory=True, num_workers=2, shuffle=True)
