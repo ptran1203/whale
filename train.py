@@ -8,6 +8,8 @@ import random
 import pandas as pd
 import numpy as np
 import torch
+from sklearn.preprocessing import LabelEncoder
+
 
 def init_seeds(seed=0):
     # Initialize random number generator (RNG) seeds https://pytorch.org/docs/stable/notes/randomness.html
@@ -38,6 +40,9 @@ def main(args):
     df = pd.read_csv('train_kfold.csv')
     if args.nrows != 0:
         df = df.sample(args.nrows)
+
+    
+    df['label'] = LabelEncoder().fit_transform(df.individual_id)
 
     train_df = df[df.fold != args.fold]
     
