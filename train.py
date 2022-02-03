@@ -36,7 +36,11 @@ def parseargs():
 
 def main(args):
     df = pd.read_csv('train_kfold.csv')
+    if args.nrows != 0:
+        df = df.sample(args.nrows)
+
     train_df = df[df.fold != args.fold]
+    
     val_df = df[df.fold == args.fold]
     val_df = val_df[val_df.label.isin(train_df.label.unique())]
 

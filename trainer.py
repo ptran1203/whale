@@ -169,7 +169,7 @@ class Trainer:
             self.logger.info(msg)
             print(msg)
 
-            score = test_score
+            score = test_scores['acc']
             if epoch > 1:
                 if score > self.best_score:
                     m = f"score improved from {self.best_score:.4f} -> {score:.4f}, save model"
