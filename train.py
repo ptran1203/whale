@@ -55,13 +55,13 @@ def main(args):
     val_data = WhaleDataset(train_df, args.img_dir, args.img_size, transform=val_transform)
 
     train_loader = DataLoader(dataset, batch_size=args.batch_size,
-        pin_memory=True, num_workers=2, shuffle=True)
+        pin_memory=True, num_workers=2, shuffle=True, drop_last=True)
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
 
     print('nlabel=', df.label.nunique())
     model = Net(args.backbone, df.label.nunique(), pretrained=True)
 
-    optimizer = optim.Adam(model.parameters(), lr=args.init_lr)
+    optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=0, momentum=0.9)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
     trainer = Trainer(model, optimizer, scheduler=scheduler, cfg=args)
     trainer.train(train_loader, val_loader, cfg=args)
