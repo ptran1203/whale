@@ -44,9 +44,9 @@ def main(args):
     
     df['label'] = LabelEncoder().fit_transform(df.individual_id)
 
-    train_df = df[df.fold != args.fold]
+    train_df = df[df.fold != args.fold].reset_index(drop=True)
     
-    val_df = df[df.fold == args.fold]
+    val_df = df[df.fold == args.fold].reset_index(drop=True)
     val_df = val_df[val_df.label.isin(train_df.label.unique())]
 
     print(f'Train={len(train_df)}, validate={len(val_df)}')

@@ -61,11 +61,11 @@ class Net(nn.Module):
     def forward(self, x, labels=None):
         batch_size = x.shape[0]
         features = self.backbone.forward_features(x)
-        # features = gem(features).view(batch_size, -1)
-        features = self.pooling(features).view(batch_size, -1)
+        features = gem(features).view(batch_size, -1)
+        # features = self.pooling(features).view(batch_size, -1)
         
         if labels is not None:
-            features = self.dropout(features)
+            # features = self.dropout(features)
             features = self.fc1(features)
             features = self.bn2(features)
             features = F.normalize(features)
