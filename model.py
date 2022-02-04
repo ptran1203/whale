@@ -8,7 +8,7 @@ def gem(x, p=3, eps=1e-6):
     return F.avg_pool2d(x.clamp(min=eps).pow(p), (x.size(-2), x.size(-1))).pow(1./p)
 
 class ArcModule(nn.Module):
-    def __init__(self, in_features, out_features, s=32, m=0.5):
+    def __init__(self, in_features, out_features, s=10, m=0.5):
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
