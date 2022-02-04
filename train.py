@@ -31,6 +31,7 @@ def parseargs():
     parser.add_argument("--outdir", type=str, default="runs/exp")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--amp", action="store_true")
+    parser.add_argument("--min_class_samples", type=int, default=0)
     parser.add_argument("--nrows", default=0, type=int)
     parser.add_argument("--img_dir", type=str, default='/content/jpeg-happywhale-384x384/train_images-384-384')
 
@@ -38,10 +39,13 @@ def parseargs():
 
 def main(args):
     df = pd.read_csv('train_kfold.csv')
+    df['count'] = df.groupby(['individual_id'])['individual_id'].transform('count')
+
+
+    df = df[df['count'] > args.min_class_samples]
     if args.nrows != 0:
         df = df.sample(args.nrows)
 
-    
     df['label'] = LabelEncoder().fit_transform(df.individual_id)
 
     train_df = df[df.fold != args.fold].reset_index(drop=True)
