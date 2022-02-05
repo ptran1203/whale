@@ -31,6 +31,20 @@ def get_train_logger(log_dir='./logs'):
     # logger.addHandler(logging.StreamHandler())
     return logger
 
+def load_my_state_dict(model, state_dict):
+ 
+        own_state = model.state_dict()
+        for name, param in state_dict.items():
+            try:
+                if name not in own_state:
+                    continue
+                if isinstance(param, Parameter):
+                    # backwards compatibility for serialized parameters
+                    param = param.data
+                own_state[name].copy_(param)
+            except:
+                print(f"Skip {name}")
+
 scaler = amp.GradScaler()
 
 
@@ -141,10 +155,7 @@ class Trainer:
         if cfg.resume:
             if os.path.exists(last_ckp):
                 ckp = torch.load(last_ckp)
-                model_dict = self.model.state_dict()
-                pretrained_dict = {k: v for k, v in ckp['model'].state_dict().items() if k in model_dict}
-                model_dict.update(pretrained_dict) 
-                self.model.load_state_dict(pretrained_dict)
+                load_my_state_dict(self.modelckp['model'].state_dict())
                 start_epoch = ckp['epoch'] + 1
                 self.logger.info(f"Resume training from epoch {start_epoch}")
                 print(f"Resume training from epoch {start_epoch}")
