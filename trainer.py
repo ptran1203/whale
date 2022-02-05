@@ -42,8 +42,8 @@ def load_my_state_dict(model, state_dict):
                     # backwards compatibility for serialized parameters
                     param = param.data
                 own_state[name].copy_(param)
-            except:
-                print(f"Skip {name}")
+            except Exception as e:
+                print(f"Skip {name}: {e}")
 
 scaler = amp.GradScaler()
 
