@@ -141,7 +141,10 @@ class Trainer:
         if cfg.resume:
             if os.path.exists(last_ckp):
                 ckp = torch.load(last_ckp)
-                self.model.load_state_dict(ckp['model'].state_dict(), strict=False)
+                model_dict = self.model.state_dict()
+                pretrained_dict = {k: v for k, v in ckp['model'].state_dict().items() if k in model_dict}
+                model_dict.update(pretrained_dict) 
+                self.model.load_state_dict(pretrained_dict)
                 start_epoch = ckp['epoch'] + 1
                 self.logger.info(f"Resume training from epoch {start_epoch}")
                 print(f"Resume training from epoch {start_epoch}")
