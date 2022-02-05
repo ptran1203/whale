@@ -38,7 +38,7 @@ def load_my_state_dict(model, state_dict):
             try:
                 if name not in own_state:
                     continue
-                if isinstance(param, Parameter):
+                if isinstance(param, nn.Parameter):
                     # backwards compatibility for serialized parameters
                     param = param.data
                 own_state[name].copy_(param)
