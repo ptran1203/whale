@@ -32,7 +32,7 @@ def infer(args):
                 # print(emb)
                 # img_id = os.path.basename(path)
                 img_id = path
-                res_dict[img_id] = [emb, top5_pred, top5_conf]
+                res_dict[img_id] = emb
 
     pickle_save(res_dict, os.path.join(args.output, 'test_embs.pkl'))
     return res_dict
