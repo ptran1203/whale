@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import argparse
 import torch
 from dataloader import InferDataset, val_transform
@@ -16,6 +17,8 @@ def infer(args):
     dataset = InferDataset(args.source, args.img_size, transform=val_transform)
     loader = torch.utils.data.DataLoader(dataset)
 
+    train_embs = np.load(args.train_embs)
+
     res_dict = {}
     with torch.no_grad():
         for imgs, paths in tqdm(loader):
@@ -30,6 +33,7 @@ def infer(args):
                 img_id = path
                 res_dict[img_id] = [emb, top5_pred, top5_conf]
 
+    np.save(os.path.join(args.output, 'test_embs.npy'))
     return res_dict
 
 
@@ -40,7 +44,7 @@ if __name__ == '__main__':
     parser.add_argument('--img_size', type=int, default=256)
     parser.add_argument('--source', type=str, default='test_images')
     parser.add_argument('--output', type=str, default='inferences/infer')
-    parser.add_argument('--run_train', action='store_true')
+    parser.add_argument('--train_embs', default='train_embs.npy')
 
     args = parser.parse_args()
     infer(args)
