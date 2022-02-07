@@ -15,6 +15,7 @@ def infer(args):
     os.makedirs(args.output, exist_ok=True)
 
     dataset = InferDataset(args.source, args.img_size, transform=val_transform)
+    print(len(dataset))
     loader = torch.utils.data.DataLoader(dataset)
 
     train_embs = np.load(args.train_embs)
