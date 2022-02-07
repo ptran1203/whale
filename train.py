@@ -31,6 +31,7 @@ def parseargs():
     parser.add_argument("--outdir", type=str, default="runs/exp")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--amp", action="store_true")
+    parser.add_argument("--skip_train", action="store_true")
     parser.add_argument("--min_class_samples", type=int, default=0)
     parser.add_argument("--nrows", default=0, type=int)
     parser.add_argument("--img_dir", type=str, default='/content/jpeg-happywhale-384x384/train_images-384-384')
@@ -68,7 +69,8 @@ def main(args):
     optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=0, momentum=0.9)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
     trainer = Trainer(model, optimizer, scheduler=scheduler, cfg=args)
-    trainer.train(train_loader, val_loader)
+    if not args.skip_train:
+        trainer.train(train_loader, val_loader)
     trainer.predict_on_train(train_df)
 
 if __name__ == '__main__':
