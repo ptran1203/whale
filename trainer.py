@@ -125,7 +125,7 @@ class Trainer:
         Run prediction on training dataset
         """
         self.model.eval()
-        dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=val_transform)
+        dataset = WhaleDataset(train_df, self.cfg.img_dir, self.cfg.img_size, transform=val_transform)
         loader = torch.utils.data.DataLoader(dataset)
         res_dict = {}
         with torch.no_grad():
@@ -137,7 +137,7 @@ class Trainer:
                     img_id = path
                     res_dict[id] = emb
 
-        np.save(os.path.join(args.outdir, "train_embs.npy"), res_dict)
+        np.save(os.path.join(self.cfg.outdir, "train_embs.npy"), res_dict)
         return res_dict
 
     def train(self, train_loader, val_loader=None):
