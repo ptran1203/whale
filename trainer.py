@@ -138,7 +138,7 @@ class Trainer:
                 for emb, id in zip(embs, ids):
                     res_dict[id] = emb
 
-        pickle_save(res_dict, os.path.join(self.cfg.outdir, "train_embs.npy"))
+        pickle_save(res_dict, os.path.join(self.cfg.outdir, "train_embs.pkl"))
         return res_dict
 
     def train(self, train_loader, val_loader=None):

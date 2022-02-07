@@ -34,7 +34,7 @@ def infer(args):
                 img_id = path
                 res_dict[img_id] = [emb, top5_pred, top5_conf]
 
-    pickle_save(res_dict, os.path.join(args.output, 'test_embs.npy'))
+    pickle_save(res_dict, os.path.join(args.output, 'test_embs.pkl'))
     return res_dict
 
 
