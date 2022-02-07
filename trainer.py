@@ -14,7 +14,8 @@ import cv2
 import torch.cuda.amp as amp
 import logging
 from dataloader import val_transform, WhaleDataset
-# from test import build_test_imgs, run_test
+from utils import pickle_save, pickle_load
+
 
 def denorm(img):
     mean = np.array([0.485, 0.456, 0.406])
@@ -137,7 +138,7 @@ class Trainer:
                 for emb, id in zip(embs, ids):
                     res_dict[id] = emb
 
-        np.save(os.path.join(self.cfg.outdir, "train_embs.npy"), res_dict)
+        pickle_save(res_dict, os.path.join(self.cfg.outdir, "train_embs.npy"))
         return res_dict
 
     def train(self, train_loader, val_loader=None):

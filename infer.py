@@ -4,7 +4,7 @@ import argparse
 import torch
 from dataloader import InferDataset, val_transform
 from tqdm.auto import tqdm
-
+from utils import pickle_save, pickle_load
 
 def infer(args):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -18,7 +18,7 @@ def infer(args):
     print(len(dataset))
     loader = torch.utils.data.DataLoader(dataset)
 
-    train_embs = np.load(args.train_embs)
+    train_embs = pickle_load(args.train_embs)
 
     res_dict = {}
     with torch.no_grad():
@@ -34,7 +34,7 @@ def infer(args):
                 img_id = path
                 res_dict[img_id] = [emb, top5_pred, top5_conf]
 
-    np.save(os.path.join(args.output, 'test_embs.npy'))
+    pickle_save(res_dict, os.path.join(args.output, 'test_embs.npy'))
     return res_dict
 
 
