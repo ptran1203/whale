@@ -135,7 +135,6 @@ class Trainer:
                 embs = self.model(imgs)
                 embs = embs.cpu().numpy()
                 for emb, id in zip(embs, ids):
-                    img_id = path
                     res_dict[id] = emb
 
         np.save(os.path.join(self.cfg.outdir, "train_embs.npy"), res_dict)
