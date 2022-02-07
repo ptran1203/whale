@@ -13,7 +13,7 @@ from scipy import spatial
 import cv2
 import torch.cuda.amp as amp
 import logging
-from dataloader import val_transform
+from dataloader import val_transform, WhaleDataset
 # from test import build_test_imgs, run_test
 
 def denorm(img):
@@ -82,7 +82,7 @@ class Trainer:
         scores = defaultdict(list)
 
         with torch.set_grad_enabled(is_train):
-            for images, labels in bar:
+            for images, labels, _ in bar:
                 images = images.to(self.device)
                 labels = labels.to(self.device)
 
@@ -120,8 +120,29 @@ class Trainer:
         
         return scores
 
-    def train(self, train_loader, val_loader=None, cfg=None):
+    def predict_on_train(self, train_df):
+        """
+        Run prediction on training dataset
+        """
+        self.model.eval()
+        dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=val_transform)
+        loader = torch.utils.data.DataLoader(dataset)
+        res_dict = {}
+        with torch.no_grad():
+            for imgs, labels, ids in tqdm(loader):
+                imgs = imgs.to(self.device)
+                embs = self.model(imgs)
+                embs = embs.cpu().numpy()
+                for emb, id in zip(embs, ids):
+                    img_id = path
+                    res_dict[id] = emb
+
+        np.save(os.path.join(args.outdir, "train_embs.npy"), res_dict)
+        return res_dict
+
+    def train(self, train_loader, val_loader=None):
         """Train process"""
+        cfg = self.cfg
         output_dir = cfg.outdir
         epochs = cfg.epochs
         weight_dir = os.path.join(output_dir, "weights")
@@ -137,7 +158,7 @@ class Trainer:
         self.init_logger(log_dir)
         early_stop_counter = 0
 
-        for imgs, labels in train_loader:
+        for imgs, labels, _ in train_loader:
             for i in range(len(imgs)):
                 img, label = imgs[i], labels[i]
                 img = img.numpy().transpose(1, 2 ,0)

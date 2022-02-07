@@ -68,7 +68,8 @@ def main(args):
     optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=0, momentum=0.9)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
     trainer = Trainer(model, optimizer, scheduler=scheduler, cfg=args)
-    trainer.train(train_loader, val_loader, cfg=args)
+    trainer.train(train_loader, val_loader)
+    trainer.predict_on_train(train_df)
 
 if __name__ == '__main__':
     init_seeds()

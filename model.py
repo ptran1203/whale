@@ -64,14 +64,13 @@ class Net(nn.Module):
         features = gem(features).view(batch_size, -1)
         # features = self.pooling(features).view(batch_size, -1)
         
+        # features = self.dropout(features)
+        features = self.fc1(features)
+        features = self.bn2(features)
+        features = F.normalize(features)
         if labels is not None:
-            # features = self.dropout(features)
-            features = self.fc1(features)
-            features = self.bn2(features)
-            features = F.normalize(features)
             return self.margin(features, labels)
         else:
-            features = F.normalize(features)
             return features
 
 if __name__ == '__main__':
