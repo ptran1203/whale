@@ -124,6 +124,7 @@ class Trainer:
         """
         Run prediction on training dataset
         """
+        self.model = self.model.to(self.device)
         self.model.eval()
         dataset = WhaleDataset(train_df, self.cfg.img_dir, self.cfg.img_size, transform=val_transform)
         loader = torch.utils.data.DataLoader(dataset)
