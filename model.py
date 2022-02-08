@@ -54,9 +54,11 @@ class Net(nn.Module):
         self.in_features = self.backbone.classifier.in_features
         self.margin = ArcModule(in_features=self.channel_size, out_features=self.out_feature)
         self.dropout = nn.Dropout2d(dropout, inplace=True)
-        self.fc1 = nn.Linear(self.in_features, self.channel_size)
-        self.bn2 = nn.BatchNorm1d(self.channel_size)
+        self.fc = nn.Linear(self.in_features, self.channel_size)
+        self.bn = nn.BatchNorm1d(self.channel_size)
         self.pooling = nn.AdaptiveAvgPool2d(1)
+        nn.init.normal_(self.fc.weight, std=0.001)
+        nn.init.constant_(self.fc.bias, 0)
 
     def forward(self, x, labels=None):
         batch_size = x.shape[0]
@@ -65,8 +67,8 @@ class Net(nn.Module):
         # features = self.pooling(features).view(batch_size, -1)
         
         # features = self.dropout(features)
-        features = self.fc1(features)
-        features = self.bn2(features)
+        features = self.fc(features)
+        features = self.bn(features)
         features = F.normalize(features)
         if labels is not None:
             return self.margin(features, labels)
