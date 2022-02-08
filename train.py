@@ -40,18 +40,16 @@ def parseargs():
 
 def main(args):
     df = pd.read_csv('train_kfold.csv')
-    df['count'] = df.groupby(['individual_id'])['individual_id'].transform('count')
 
-
-    df = df[df['count'] > args.min_class_samples]
+    df = df[df['sample_count'] > args.min_class_samples]
     if args.nrows != 0:
         df = df.sample(args.nrows)
 
     df['label'] = LabelEncoder().fit_transform(df.individual_id)
 
-    train_df = df[df.fold != args.fold].reset_index(drop=True)
-    
-    val_df = df[df.fold == args.fold].reset_index(drop=True)
+    train_df = df[df.subset == 'train'].reset_index(drop=True)
+    val_df = df[df.subset == 'test'].reset_index(drop=True)
+
     val_df = val_df[val_df.label.isin(train_df.label.unique())]
 
     print(f'Train={len(train_df)}, validate={len(val_df)}')
@@ -63,7 +61,7 @@ def main(args):
         pin_memory=True, num_workers=2, shuffle=True, drop_last=True)
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
 
-    print('nlabel=', df.label.nunique())
+    print(f'nlabel={df.label.nunique()}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
     model = Net(args.backbone, df.label.nunique(), pretrained=True)
 
     optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=0, momentum=0.9)

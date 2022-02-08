@@ -11,8 +11,14 @@ df['fold'] = -1
 for i, (_, idx) in enumerate(gkf.split(df, df.species)):
     df.loc[idx, 'fold'] = i
 
-import pandas as pd
-df = pd.read_csv('train_kfold.csv')
+
+df['sample_count'] = df.groupby(['individual_id'])['individual_id'].transform('count')
+df['subset'] = 'train'
+
+df.loc[df['fold'] == 0, 'subset'] = 'test'
+df.loc[df['sample_count'] < 6, 'subset'] = 'train'
+
+
 
 from sklearn.preprocessing import LabelEncoder
 le = LabelEncoder()
@@ -20,7 +26,9 @@ y = le.fit_transform(df.individual_id)
 df['label'] = y
 
 
-
-print(df.fold.value_counts())
+train_df = df.query('subset == "train"')
+val_df = df.query('subset == "test"')
+print(f'nlabel={df.label.nunique()}train={train_df.label.nunique()}, test={val_df.label.nunique()}')
+print(len(train_df), len(val_df))
 df.to_csv('train_kfold.csv', index=False)
 
