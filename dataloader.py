@@ -39,7 +39,7 @@ class WhaleDataset(Dataset):
         if self.transform is not None:
             img = self.transform(image=img)['image']
 
-        return torch.from_numpy(img.transpose(2, 0, 1)).float(), torch.tensor(label).float(), row['image']
+        return torch.from_numpy(img.transpose(2, 0, 1)), torch.tensor(label), row['image']
 
     def __len__(self):
         return len(self.df)
