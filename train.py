@@ -64,7 +64,7 @@ def main(args):
     print(f'nlabel={df.label.nunique()}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
     model = Net(args.backbone, df.label.nunique(), pretrained=True)
 
-    optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=0, momentum=0.9)
+    optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-5, momentum=0.9)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
     trainer = Trainer(model, optimizer, scheduler=scheduler, cfg=args)
     if not args.skip_train:
