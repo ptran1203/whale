@@ -46,9 +46,6 @@ def load_my_state_dict(model, state_dict):
             except Exception as e:
                 print(f"Skip {name}: {e}")
 
-scaler = amp.GradScaler()
-
-
 class Trainer:
     def __init__(self, model, optimizer, criterion=nn.CrossEntropyLoss(), scheduler=None, cfg=None):
         self.model = model
@@ -81,6 +78,8 @@ class Trainer:
 
         bar = tqdm(loader) if is_train else loader
         scores = defaultdict(list)
+        if self.cfg.amp:
+            scaler = amp.GradScaler()
 
         with torch.set_grad_enabled(is_train):
             for images, labels, _ in bar:

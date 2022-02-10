@@ -60,10 +60,10 @@ class Net(nn.Module):
         nn.init.normal_(self.fc.weight, std=0.001)
         nn.init.constant_(self.fc.bias, 0)
 
-    def forward(self, x, labels=None):
+    def forward(self, x, labels=None, p=3):
         batch_size = x.shape[0]
         features = self.backbone.forward_features(x)
-        features = gem(features).view(batch_size, -1)
+        features = gem(features, p=p).view(batch_size, -1)
         # features = self.pooling(features).view(batch_size, -1)
         
         # features = self.dropout(features)
