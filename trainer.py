@@ -125,6 +125,10 @@ class Trainer:
         """
         Run prediction on training dataset
         """
+        weight_dir = os.path.join(output_dir, "weights")
+        last_ckp = os.path.join(weight_dir, f'{self.model_name}_last.pth')
+        ckp = torch.load(last_ckp)
+        load_my_state_dict(self.model, ckp['model'].state_dict())
         self.model = self.model.to(self.device)
         self.model.eval()
         dataset = WhaleDataset(train_df, self.cfg.img_dir, self.cfg.img_size, transform=val_transform)
