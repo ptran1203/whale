@@ -87,22 +87,22 @@ class Trainer:
                 labels = labels.to(self.device).long()
 
                 # print(labels)
+
+                if is_train:
+                    self.optim.zero_grad()
                 
                 if self.cfg.amp:
                     with amp.autocast():
                         logit = self.model(images, labels)
                         loss = self.criterion(logit, labels)
+                        if is_train:
+                            scaler.scale(loss).backward() 
+                            scaler.step(self.optim)
+                            scaler.update()
                 else:
                     logit = self.model(images, labels)
                     loss = self.criterion(logit, labels)
-                
-                if is_train:
-                    self.optim.zero_grad()
-                    if self.cfg.amp:
-                        scaler.scale(loss).backward() 
-                        scaler.step(self.optim)
-                        scaler.update()
-                    else:
+                    if is_train:
                         loss.backward()
                         self.optim.step()
 
