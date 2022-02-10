@@ -23,11 +23,11 @@ class ArcModule(nn.Module):
         self.mm = torch.tensor(math.sin(math.pi - m) * m)
 
     def forward(self, inputs, labels):
-        cos_th = F.linear(inputs, F.normalize(self.weight))
+        cos_th = F.linear(inputs, F.normalize(self.weight)).float()
         cos_th = cos_th.clamp(-1, 1)
         sin_th = torch.sqrt(1.0 - torch.pow(cos_th, 2))
         cos_th_m = cos_th * self.cos_m - sin_th * self.sin_m
-        print(cos_th.dtype, self.th.dtype, cos_th_m.dtype, self.mm.dtype)
+        # print(cos_th.dtype, self.th.dtype, cos_th_m.dtype, self.mm.dtype)
         cos_th_m = torch.where(cos_th > self.th, cos_th_m, cos_th - self.mm)
 
         cond_v = cos_th - self.th
