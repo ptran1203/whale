@@ -84,7 +84,7 @@ class Trainer:
         with torch.set_grad_enabled(is_train):
             for images, labels, _ in bar:
                 images = images.to(self.device)
-                labels = labels.to(self.device)
+                labels = labels.to(self.device).long()
 
                 # print(labels)
                 
