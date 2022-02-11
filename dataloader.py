@@ -7,7 +7,7 @@ from sklearn.preprocessing import LabelEncoder
 from glob import glob
 
 train_transform = A.Compose([
-    A.HorizontalFlip(p=0.5),
+        # A.HorizontalFlip(p=0.5),
     A.ImageCompression(quality_lower=99, quality_upper=100, p=0.5),
     # A.GaussNoise(p=0.1),
     A.GaussianBlur(blur_limit=3, p=0.1),
@@ -15,7 +15,7 @@ train_transform = A.Compose([
     A.RandomBrightnessContrast(p=0.5, brightness_limit=(-0.2, 0.2), contrast_limit=(-0.2, 0.2)),
     A.HueSaturationValue(p=0.5, hue_shift_limit=0.2, sat_shift_limit=0.2, val_shift_limit=0.2),
     A.ShiftScaleRotate(p=0.5, shift_limit=0.2, scale_limit=0.2, rotate_limit=20, border_mode=0),
-    A.Cutout(p=0.5, num_holes=1, max_h_size=32, max_w_size=32),
+    A.Cutout(p=0.5, num_holes=1, max_h_size=64, max_w_size=64),
     A.Normalize()
 ])
 
