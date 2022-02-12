@@ -47,15 +47,18 @@ def main(args):
 
     df['label'] = LabelEncoder().fit_transform(df.individual_id)
 
-    train_df = df[df.subset == 'train'].reset_index(drop=True)
-    val_df = df[df.subset == 'test'].reset_index(drop=True)
-
-    val_df = val_df[val_df.label.isin(train_df.label.unique())]
+    if args.skip_train:
+        train_df = df
+        val_df = df
+    else:
+        train_df = df[df.subset == 'train'].reset_index(drop=True)
+        val_df = df[df.subset == 'test'].reset_index(drop=True)
+        val_df = val_df[val_df.label.isin(train_df.label.unique())]
 
     print(f'Train={len(train_df)}, validate={len(val_df)}')
 
     dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=train_transform)
-    val_data = WhaleDataset(train_df, args.img_dir, args.img_size, transform=val_transform)
+    val_data = WhaleDataset(val_df, args.img_dir, args.img_size, transform=val_transform)
 
     train_loader = DataLoader(dataset, batch_size=args.batch_size,
         pin_memory=True, num_workers=2, shuffle=True, drop_last=True)
