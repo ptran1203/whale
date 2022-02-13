@@ -8,6 +8,7 @@ import random
 import pandas as pd
 import numpy as np
 import torch
+import losses
 from sklearn.preprocessing import LabelEncoder
 
 
@@ -35,8 +36,17 @@ def parseargs():
     parser.add_argument("--min_class_samples", type=int, default=0)
     parser.add_argument("--nrows", default=0, type=int)
     parser.add_argument("--img_dir", type=str, default='/content/jpeg-happywhale-384x384/train_images-384-384')
+    parser.add_argument("--loss", type=str, default='ce', help='ce|ce_smooth|focal')
 
     return parser.parse_args()
+
+def get_loss_fn(loss_type, n_labels):
+    if loss_type == 'ce':
+        return nn.CrossEntropyLoss()
+    elif loss_type == 'ce_smooth':
+        return losses.CrossEntropyLossWithLabelSmoothing(n_labels, ls_=0.9)
+    elif loss_type == 'focal':
+        return losses.FocalLoss()
 
 def main(args):
     df = pd.read_csv('data/train_kfold.csv')
@@ -69,7 +79,8 @@ def main(args):
 
     optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-5, momentum=0.9)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
-    trainer = Trainer(model, optimizer, scheduler=scheduler, cfg=args)
+    criterion = get_loss_fn(args.loss, df.label.nunique())
+    trainer = Trainer(model, optimizer, criterion=criterion, scheduler=scheduler, cfg=args)
     if not args.skip_train:
         trainer.train(train_loader, val_loader)
     trainer.predict_on_train(train_df)
