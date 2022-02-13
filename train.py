@@ -53,7 +53,7 @@ def main(args):
     else:
         train_df = df[df.subset == 'train'].reset_index(drop=True)
         val_df = df[df.subset == 'test'].reset_index(drop=True)
-        val_df = val_df[val_df.label.isin(train_df.label.unique())]
+        # val_df = val_df[val_df.label.isin(train_df.label.unique())]
 
     print(f'Train={len(train_df)}, validate={len(val_df)}')
 
