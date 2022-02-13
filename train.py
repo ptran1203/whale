@@ -42,7 +42,7 @@ def parseargs():
 
 def get_loss_fn(loss_type, n_labels):
     if loss_type == 'ce':
-        return nn.CrossEntropyLoss()
+        return torch.nn.CrossEntropyLoss()
     elif loss_type == 'ce_smooth':
         return losses.CrossEntropyLossWithLabelSmoothing(n_labels, ls_=0.9)
     elif loss_type == 'focal':
