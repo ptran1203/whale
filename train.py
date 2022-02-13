@@ -39,7 +39,7 @@ def parseargs():
     return parser.parse_args()
 
 def main(args):
-    df = pd.read_csv('train_kfold.csv')
+    df = pd.read_csv('data/train_kfold.csv')
 
     df = df[df['sample_count'] > args.min_class_samples]
     if args.nrows != 0:

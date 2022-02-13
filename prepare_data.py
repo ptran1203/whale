@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
 
-df = pd.read_csv('train.csv')
+df = pd.read_csv('data/train.csv')
 
 
 gkf = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
@@ -30,5 +30,5 @@ train_df = df.query('subset == "train"')
 val_df = df.query('subset == "test"')
 print(f'nlabel={df.label.nunique()}train={train_df.label.nunique()}, test={val_df.label.nunique()}')
 print(len(train_df), len(val_df))
-df.to_csv('train_kfold.csv', index=False)
+df.to_csv('data/train_kfold.csv', index=False)
 
