@@ -9,7 +9,7 @@ from utils import pickle_save, pickle_load
 from collections import defaultdict
 
 
-def create_val_embs(args):
+def create_val_embs(args, val_df):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = torch.load(args.weight, map_location='cpu')['model']
     model = model.to(device)
@@ -17,7 +17,7 @@ def create_val_embs(args):
 
     os.makedirs(args.output, exist_ok=True)
 
-    dataset = WhaleDataset(args.source, args.img_size, transform=val_transform)
+    dataset = WhaleDataset(val_df, args.img_size, transform=val_transform)
     print(len(dataset))
     loader = torch.utils.data.DataLoader(dataset)
 
@@ -90,11 +90,10 @@ def compute_sim(train_df, train_embs, test_embs):
     sim_df = pd.DataFrame(records, columns=['image', 'predictions'])
     return sim_df
 
-def evaluate(train_embs, val_embs):
-    train_df = pd.read_csv('train_kfold.csv')
-    sim_df = compute_sim(train_df, train_embs, val_embs)
+def evaluate(val_df, train_embs, val_embs):
+    sim_df = compute_sim(val_df, train_embs, val_embs)
 
-    label_map = dict(zip(train_df.image, train_df.individual_id))
+    label_map = dict(zip(val_df.image, val_df.individual_id))
     
     predictions = []
     labels = []
@@ -118,8 +117,12 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    val_embs = create_val_embs(args)
+    df = pd.read_csv('train_kfold.csv')
+    train_df = df[df.subset == 'train']
+    val_df = df[df.subset == 'test']
+
+    val_embs = create_val_embs(args, val_df)
     train_embs = pickle_load(args.train_embs)
 
-    score = evaluate(train_embs, val_embs)
+    score = evaluate(val_df, train_embs, val_embs)
     print(f"Score={score:.4f}")
