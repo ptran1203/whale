@@ -17,7 +17,7 @@ def create_val_embs(args, val_df):
 
     os.makedirs(args.output, exist_ok=True)
 
-    dataset = WhaleDataset(val_df, args.img_size, transform=val_transform)
+    dataset = WhaleDataset(val_df, args.img_dir, args.img_size, transform=val_transform)
     print(len(dataset))
     loader = torch.utils.data.DataLoader(dataset)
 
@@ -113,6 +113,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--img_size', type=int, default=256)
     parser.add_argument('--output', type=str, default='inferences/eval')
+    parser.add_argument("--img_dir", type=str, default='/content/whale-512/kaggle/working/data/train_images')
     parser.add_argument('--train_embs', default='train_embs.npy')
 
     args = parser.parse_args()
