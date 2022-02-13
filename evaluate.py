@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    df = pd.read_csv('train_kfold.csv')
+    df = pd.read_csv('data/train_kfold.csv')
     train_df = df[df.subset == 'train']
     val_df = df[df.subset == 'test']
 
