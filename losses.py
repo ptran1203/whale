@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch
+import torch.nn.functional as F
 
 class CrossEntropyLossWithLabelSmoothing(nn.Module):
     def __init__(self, n_dim, ls_=0.9):
@@ -12,7 +13,7 @@ class CrossEntropyLossWithLabelSmoothing(nn.Module):
         target *= self.ls_
         target += (1 - self.ls_) / self.n_dim
 
-        logprobs = nn.functional.log_softmax(x, dim=-1)
+        logprobs = F.log_softmax(x, dim=-1)
         loss = -logprobs * target
         loss = loss.sum(-1)
         return loss.mean()
