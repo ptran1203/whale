@@ -8,9 +8,9 @@ from glob import glob
 
 def train_transform(img_size):
     return A.Compose([
-        # A.SmallestMaxSize(img_size),
-        # A.RandomCrop(img_size, img_size, p=1.0),
-        A.Resize(img_size, img_size),
+        A.SmallestMaxSize(img_size),
+        A.RandomCrop(img_size, img_size, p=1.0),
+        # A.Resize(img_size, img_size),
         A.HorizontalFlip(p=0.5),
         A.ImageCompression(quality_lower=99, quality_upper=100, p=0.2),
         # A.GaussNoise(p=0.1),
@@ -26,9 +26,9 @@ def train_transform(img_size):
 
 def val_transform(img_size):
     return A.Compose([
-        # A.SmallestMaxSize(img_size),
-        # A.CenterCrop(img_size, img_size),
-        A.Resize(img_size, img_size),
+        A.SmallestMaxSize(img_size),
+        A.CenterCrop(img_size, img_size),
+        # A.Resize(img_size, img_size),
         A.Normalize()
     ])
 
