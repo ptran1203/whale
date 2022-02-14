@@ -167,7 +167,7 @@ class Trainer:
                 img, label = imgs[i], labels[i]
                 img = img.numpy().transpose(1, 2 ,0)
                 img = denorm(img)
-                cv2.imwrite(os.path.join(log_example_dir, f"example_{label}_{i}.jpg"),img)
+                cv2.imwrite(os.path.join(log_example_dir, f"example_{i}.jpg"),img)
             break
 
         # history

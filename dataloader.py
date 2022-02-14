@@ -24,7 +24,7 @@ def train_transform(img_size):
     ])
 
 def val_transform(img_size):
-    val_transform = A.Compose([
+    return A.Compose([
         A.SmallestMaxSize(img_size),
         A.CenterCrop(img_size, img_size),
         A.Normalize()
