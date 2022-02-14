@@ -14,7 +14,7 @@ def infer(args):
 
     os.makedirs(args.output, exist_ok=True)
 
-    dataset = InferDataset(args.source, args.img_size, transform=val_transform)
+    dataset = InferDataset(args.source, args.img_size, transform=val_transform(args.img_size))
     print(len(dataset))
     loader = torch.utils.data.DataLoader(dataset)
 

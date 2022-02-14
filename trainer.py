@@ -130,7 +130,7 @@ class Trainer:
         load_my_state_dict(self.model, ckp['model'].state_dict())
         self.model = self.model.to(self.device)
         self.model.eval()
-        dataset = WhaleDataset(train_df, self.cfg.img_dir, self.cfg.img_size, transform=val_transform)
+        dataset = WhaleDataset(train_df, self.cfg.img_dir, self.cfg.img_size, transform=val_transform(args.img_size))
         loader = torch.utils.data.DataLoader(dataset)
         res_dict = {}
         with torch.no_grad():
