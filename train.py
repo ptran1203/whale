@@ -12,7 +12,7 @@ import importlib
 import losses
 import math
 from sklearn.preprocessing import LabelEncoder
-from transformers import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
+from utils import get_cosine_schedule_with_warmup
 
 
 
