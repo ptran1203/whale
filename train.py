@@ -84,7 +84,7 @@ def main(args):
     print("Train aug", dataset.transform)
 
     train_loader = DataLoader(dataset, batch_size=args.batch_size,
-        pin_memory=True, num_workers=2, shuffle=True, drop_last=True)
+        pin_memory=True, num_workers=2, shuffle=True, drop_last =True)
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
 
     print(f'nlabel={df.label.nunique()}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
