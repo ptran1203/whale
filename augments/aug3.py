@@ -13,7 +13,7 @@ def train_transform(img_size):
         A.RandomBrightnessContrast(p=0.7, brightness_limit=(-0.2, 0.2), contrast_limit=(-0.2, 0.2)),
         A.HueSaturationValue(p=0.7, hue_shift_limit=0.2, sat_shift_limit=0.2, val_shift_limit=0.2),
         A.ShiftScaleRotate(p=0.7, shift_limit=0.2, scale_limit=0.2, rotate_limit=15, border_mode=0),
-        # A.Cutout(p=0.5, num_holes=1, max_h_size=int(img_size * 0.3), max_w_size=int(img_size * 0.3)),
+        # A.Cutout(p=0.5, num_holes=1, max_h_size=int(img_size * 0.125), max_w_size=int(img_size * 0.125)),
         # A.ToGray(p=0.01),
         A.Normalize()
     ])
