@@ -6,6 +6,20 @@ import torch.nn.functional as F
 
 def gem(x, p=3, eps=1e-6):
     return F.avg_pool2d(x.clamp(min=eps).pow(p), (x.size(-2), x.size(-1))).pow(1./p)
+class GeM(nn.Module):
+    def __init__(self, p=3, eps=1e-6, p_trainable=True):
+        super(GeM,self).__init__()
+        if p_trainable:
+            self.p = Parameter(torch.ones(1)*p)
+        else:
+            self.p = p
+        self.eps = eps
+
+    def forward(self, x):
+        return gem(x, p=self.p, eps=self.eps)
+   
+    def __repr__(self):
+        return self.__class__.__name__ + '(' + 'p=' + '{:.4f}'.format(self.p.data.tolist()[0]) + ', ' + 'eps=' + str(self.eps) + ')'
 
 class ArcModule(nn.Module):
     def __init__(self, in_features, out_features, s=10, m=0.3):
@@ -74,15 +88,14 @@ class Net(nn.Module):
 
         self.head = ArcModule(in_features=self.channel_size, out_features=self.out_feature)
         self.dropout = nn.Dropout2d(dropout, inplace=True)
-        self.pooling = nn.AdaptiveAvgPool2d(1)
-        nn.init.normal_(self.fc.weight, std=0.001)
-        nn.init.constant_(self.fc.bias, 0)
+        # self.pooling = nn.AdaptiveAvgPool2d(1)
+        self.pooling = GeM(p=3)
+
 
     def forward(self, x, labels=None, p=3):
         batch_size = x.shape[0]
         features = self.backbone.forward_features(x)
-        features = gem(features, p=p).view(batch_size, -1)
-        # features = self.pooling(features).view(batch_size, -1)
+        features = self.pooling(features).view(batch_size, -1)
         
         features = self.neck(features)
         if labels is not None:
