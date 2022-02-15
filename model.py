@@ -24,7 +24,7 @@ class GeM(nn.Module):
         return self.__class__.__name__ + '(' + 'p=' + '{:.4f}'.format(self.p.data.tolist()[0]) + ', ' + 'eps=' + str(self.eps) + ')'
 
 class ArcModule(nn.Module):
-    def __init__(self, in_features, out_features, s=30, m=0.5):
+    def __init__(self, in_features, out_features, s=30, m=0.3):
         super().__init__()
         self.in_features = in_features
         self.out_features = out_features
