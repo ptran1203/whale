@@ -7,11 +7,11 @@ from dataloader import InferDataset, WhaleDataset, val_transform
 from tqdm.auto import tqdm
 from utils import pickle_save, pickle_load
 from collections import defaultdict
-import augments
+import importlib
 
 
 def create_val_embs(args, val_df):
-    aug = getattr(augments, args.aug)
+    aug = importlib.import_module(f'augments.{args.aug}')
     val_transform = aug.val_transform
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

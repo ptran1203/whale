@@ -8,7 +8,7 @@ import random
 import pandas as pd
 import numpy as np
 import torch
-import augments
+import importlib
 import losses
 from sklearn.preprocessing import LabelEncoder
 
@@ -71,7 +71,7 @@ def main(args):
 
     print(f'Train={len(train_df)}, validate={len(val_df)}')
 
-    aug = getattr(augments, args.aug)
+    aug = importlib.import_module(f'augments.{args.aug}')
     train_transform, val_transform = aug.train_transform, aug.val_transform
 
     dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=train_transform(args.img_size))
