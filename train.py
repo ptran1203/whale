@@ -10,7 +10,10 @@ import numpy as np
 import torch
 import importlib
 import losses
+import math
 from sklearn.preprocessing import LabelEncoder
+from transformers import get_linear_schedule_with_warmup, get_cosine_schedule_with_warmup
+
 
 
 def init_seeds(seed=0):
@@ -33,6 +36,7 @@ def parseargs():
     parser.add_argument("--outdir", type=str, default="runs/exp")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--amp", action="store_true")
+    parser.add_argument("--warmup_epochs", default=1, type=int)
     parser.add_argument("--skip_train", action="store_true")
     parser.add_argument("--min_class_samples", type=int, default=0)
     parser.add_argument("--nrows", default=0, type=int)
@@ -77,6 +81,8 @@ def main(args):
     dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=train_transform(args.img_size))
     val_data = WhaleDataset(val_df, args.img_dir, args.img_size, transform=val_transform(args.img_size))
 
+    print("Train aug", dataset.transform)
+
     train_loader = DataLoader(dataset, batch_size=args.batch_size,
         pin_memory=True, num_workers=2, shuffle=True, drop_last=True)
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
@@ -85,7 +91,11 @@ def main(args):
     model = Net(args.backbone, df.label.nunique(), args.neck, pretrained=True)
 
     optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-5, momentum=0.9)
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
+    # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
+    num_train_steps = len(train_loader)
+    print('Training steps:', num_train_steps)
+    scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=num_train_steps * args.warmup_epochs, 
+                                                        num_training_steps=int(num_train_steps * (args.epochs)))
     criterion = get_loss_fn(args.loss, df.label.nunique())
     trainer = Trainer(model, optimizer, criterion=criterion, scheduler=scheduler, cfg=args)
     if not args.skip_train:
