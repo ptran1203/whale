@@ -7,9 +7,13 @@ from dataloader import InferDataset, WhaleDataset, val_transform
 from tqdm.auto import tqdm
 from utils import pickle_save, pickle_load
 from collections import defaultdict
+import augments
 
 
 def create_val_embs(args, val_df):
+    aug = getattr(augments, args.aug)
+    val_transform = aug.val_transform
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = torch.load(args.weight, map_location='cpu')['model']
     model = model.to(device)
@@ -115,6 +119,7 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=str, default='inferences/eval')
     parser.add_argument("--img_dir", type=str, default='/content/whale-512/kaggle/working/data/train_images')
     parser.add_argument('--train_embs', default='train_embs.npy')
+    parser.add_argument('--aug', default='aug1')
 
     args = parser.parse_args()
 

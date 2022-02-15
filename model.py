@@ -45,17 +45,35 @@ class ArcModule(nn.Module):
 
 class Net(nn.Module):
 
-    def __init__(self, backbone, n_classes, channel_size=512, dropout=0.3, pretrained=False):
+    def __init__(self, backbone, n_classes, neck='D', channel_size=512, dropout=0.3, pretrained=False):
         super(Net, self).__init__()
         self.name = backbone
         self.backbone = timm.create_model(backbone, pretrained=pretrained)
         self.channel_size = channel_size
         self.out_feature = n_classes
         self.in_features = self.backbone.classifier.in_features
-        self.margin = ArcModule(in_features=self.channel_size, out_features=self.out_feature)
+
+        if neck == "D":
+            self.neck = nn.Sequential(
+                nn.Linear(self.in_features, self.channel_size, bias=True),
+                nn.BatchNorm1d(self.channel_size),
+                torch.nn.PReLU()
+            )
+        elif neck == "F":
+            self.neck = nn.Sequential(
+                nn.Dropout(0.3),
+                nn.Linear(self.in_features, self.channel_size, bias=True),
+                nn.BatchNorm1d(self.channel_size),
+                torch.nn.PReLU()
+            )
+        else:
+            self.neck = nn.Sequential(
+                nn.Linear(self.in_features, self.channel_size, bias=False),
+                nn.BatchNorm1d(self.channel_size),
+            )
+
+        self.head = ArcModule(in_features=self.channel_size, out_features=self.out_feature)
         self.dropout = nn.Dropout2d(dropout, inplace=True)
-        self.fc = nn.Linear(self.in_features, self.channel_size)
-        self.bn = nn.BatchNorm1d(self.channel_size)
         self.pooling = nn.AdaptiveAvgPool2d(1)
         nn.init.normal_(self.fc.weight, std=0.001)
         nn.init.constant_(self.fc.bias, 0)
@@ -66,12 +84,9 @@ class Net(nn.Module):
         features = gem(features, p=p).view(batch_size, -1)
         # features = self.pooling(features).view(batch_size, -1)
         
-        # features = self.dropout(features)
-        features = self.fc(features)
-        features = self.bn(features)
-        # features = F.normalize(features)
+        features = self.neck(features)
         if labels is not None:
-            return self.margin(features, labels)
+            return self.head(features, labels)
         else:
             return features
 

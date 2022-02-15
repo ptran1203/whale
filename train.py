@@ -1,5 +1,5 @@
 from model import Net
-from dataloader import WhaleDataset, train_transform, val_transform
+from dataloader import WhaleDataset
 from trainer import Trainer
 from torch.utils.data import DataLoader
 import torch.optim as optim
@@ -8,6 +8,7 @@ import random
 import pandas as pd
 import numpy as np
 import torch
+import augments
 import losses
 from sklearn.preprocessing import LabelEncoder
 
@@ -37,6 +38,9 @@ def parseargs():
     parser.add_argument("--nrows", default=0, type=int)
     parser.add_argument("--img_dir", type=str, default='/content/jpeg-happywhale-384x384/train_images-384-384')
     parser.add_argument("--loss", type=str, default='ce', help='ce|ce_smooth|focal')
+    parser.add_argument("--neck", type=str, default='D', help='D|F|N')
+    parser.add_argument("--aug", type=str, default='aug1', help='aug config')
+
 
     return parser.parse_args()
 
@@ -67,6 +71,9 @@ def main(args):
 
     print(f'Train={len(train_df)}, validate={len(val_df)}')
 
+    aug = getattr(augments, args.aug)
+    train_transform, val_transform = aug.train_transform, aug.val_transform
+
     dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=train_transform(args.img_size))
     val_data = WhaleDataset(val_df, args.img_dir, args.img_size, transform=val_transform(args.img_size))
 
@@ -75,7 +82,7 @@ def main(args):
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
 
     print(f'nlabel={df.label.nunique()}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
-    model = Net(args.backbone, df.label.nunique(), pretrained=True)
+    model = Net(args.backbone, df.label.nunique(), args.neck, pretrained=True)
 
     optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-5, momentum=0.9)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
