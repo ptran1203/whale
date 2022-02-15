@@ -106,6 +106,9 @@ class Trainer:
                         loss.backward()
                         self.optim.step()
 
+                if is_train and self.scheduler is not None:
+                    self.scheduler.step()  # onecyclelr
+
                 # Compute metric score
                 pred = torch.softmax(logit.detach(), dim=-1)
                 pred_label = torch.argmax(pred, dim=-1).cpu().numpy()
@@ -197,9 +200,6 @@ class Trainer:
             test_scores = self.run_epoch(val_loader, is_train=False)
 
             lr = self.optim.param_groups[0]["lr"]
-
-            if self.scheduler is not None:
-                self.scheduler.step()  # onecyclelr
 
             msg = [f"Epoch {epoch + 1}/{epochs} (lr={lr:.5f})\nTrain "]
             msg += [f"{k}: {v:.5f}" for k, v in train_scores.items()]
