@@ -90,7 +90,8 @@ def main(args):
     print(f'nlabel={df.label.nunique()}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
     model = Net(args.backbone, df.label.nunique(), args.neck, pretrained=True)
 
-    optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-4, momentum=0.9)
+    # optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-4, momentum=0.9)
+    optimizer = optim.Adam(model.parameters(), lr=args.init_lr, weight_decay=1e-4)
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
     num_train_steps = len(train_loader)
     print('Training steps:', num_train_steps)
