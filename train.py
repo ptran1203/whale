@@ -61,6 +61,12 @@ def main(args):
     df = pd.read_csv('data/train_kfold.csv')
 
     df = df[df['sample_count'] > args.min_class_samples]
+    n_classes = df.label.nunique()
+
+    if args.skip_train:
+        # Reload full train data
+        df = pd.read_csv('data/train_kfold.csv')
+
     if args.nrows != 0:
         df = df.sample(args.nrows)
 
@@ -88,8 +94,8 @@ def main(args):
         pin_memory=True, num_workers=2, shuffle=True, drop_last =True)
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
 
-    print(f'nlabel={df.label.nunique()}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
-    model = Net(args.backbone, df.label.nunique(), args.neck, pretrained=True)
+    print(f'nlabel={n_classes}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
+    model = Net(args.backbone, n_classes, args.pool, args.neck, pretrained=True)
 
     # optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-4, momentum=0.9)
     optimizer = optim.Adam(model.parameters(), lr=args.init_lr, weight_decay=1e-4)
@@ -98,7 +104,7 @@ def main(args):
     print('Training steps:', num_train_steps)
     scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=num_train_steps * args.warmup_epochs, 
                                                         num_training_steps=int(num_train_steps * (args.epochs)))
-    criterion = get_loss_fn(args.loss, df.label.nunique())
+    criterion = get_loss_fn(args.loss, n_classes)
     trainer = Trainer(model, optimizer, criterion=criterion, scheduler=scheduler, cfg=args)
     if not args.skip_train:
         trainer.train(train_loader, val_loader)
