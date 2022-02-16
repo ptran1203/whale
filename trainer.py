@@ -134,7 +134,7 @@ class Trainer:
         self.model = self.model.to(self.device)
         self.model.eval()
         dataset = WhaleDataset(train_df, self.cfg.img_dir, self.cfg.img_size, transform=val_transform(self.cfg.img_size))
-        loader = torch.utils.data.DataLoader(dataset)
+        loader = torch.utils.data.DataLoader(dataset, batch_size=self.cfg.batch_size)
         res_dict = {}
         with torch.no_grad():
             for imgs, labels, ids in tqdm(loader):
