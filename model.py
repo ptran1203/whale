@@ -61,7 +61,7 @@ class ArcModule(nn.Module):
 
 class Net(nn.Module):
 
-    def __init__(self, backbone, n_classes, neck='D', channel_size=512, dropout=0.3, pretrained=False):
+    def __init__(self, backbone, n_classes, pool='gem', neck='D', channel_size=512, dropout=0.3, pretrained=False):
         super(Net, self).__init__()
         self.name = backbone
         self.backbone = timm.create_model(backbone, pretrained=pretrained)
@@ -89,10 +89,11 @@ class Net(nn.Module):
             )
 
         self.head = ArcModule(in_features=self.channel_size, out_features=self.out_feature)
-        self.dropout = nn.Dropout2d(dropout, inplace=True)
-        # self.pooling = nn.AdaptiveAvgPool2d(1)
-        self.pooling = GeM(p=3)
 
+        if pool == 'gem':
+            self.pooling = GeM(p=3)
+        else:
+            self.pooling = nn.AdaptiveAvgPool2d(1)
 
     def forward(self, x, labels=None, p=3):
         batch_size = x.shape[0]
