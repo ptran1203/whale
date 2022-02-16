@@ -20,7 +20,7 @@ def infer(args):
 
     dataset = InferDataset(args.source, args.img_size, transform=val_transform(args.img_size))
     print(len(dataset))
-    loader = torch.utils.data.DataLoader(dataset)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=64)
 
     train_embs = pickle_load(args.train_embs)
 

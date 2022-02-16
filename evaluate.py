@@ -23,7 +23,7 @@ def create_val_embs(args, val_df):
 
     dataset = WhaleDataset(val_df, args.img_dir, args.img_size, transform=val_transform(args.img_size))
     print(len(dataset))
-    loader = torch.utils.data.DataLoader(dataset)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=64)
 
     res_dict = {}
     with torch.no_grad():
