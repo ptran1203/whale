@@ -221,35 +221,41 @@ class Trainer:
 
         for epoch in range(start_epoch, epochs):
             train_scores = self.run_epoch(train_loader)
-            test_scores = self.run_epoch(val_loader, is_train=False)
+
+            do_valid = epoch % 5 == 0
+
+            if do_valid:
+                test_scores = self.run_epoch(val_loader, is_train=False)
 
             lr = self.optim.param_groups[0]["lr"]
 
             msg = [f"Epoch {epoch + 1}/{epochs} (lr={lr:.5f})\nTrain "]
             msg += [f"{k}: {v:.5f}" for k, v in train_scores.items()]
-            msg += ["\nVal "] + [f"{k}: {v:.5f}" for k, v in test_scores.items()]
+            if do_valid:
+                msg += ["\nVal "] + [f"{k}: {v:.5f}" for k, v in test_scores.items()]
             msg = ", ".join(msg)
             self.logger.info(msg)
             print(msg)
 
-            score = test_scores['acc']
-            if epoch > 1:
-                if score > self.best_score:
-                    m = f"score improved from {self.best_score:.4f} -> {score:.4f}, save model"
-                    self.logger.info(m)
-                    print(m)
-                    self.best_score = score
-                    early_stop_counter = 0
-                    torch.save({
-                        'epoch': epoch,
-                        'model': self.model,
-                    }, os.path.join(weight_dir, f'{self.model_name}_best.pth'))
-                else:
-                    early_stop_counter += 1
+            if do_valid:
+                score = test_scores['acc']
+                if epoch > 1:
+                    if score > self.best_score:
+                        m = f"score improved from {self.best_score:.4f} -> {score:.4f}, save model"
+                        self.logger.info(m)
+                        print(m)
+                        self.best_score = score
+                        early_stop_counter = 0
+                        torch.save({
+                            'epoch': epoch,
+                            'model': self.model,
+                        }, os.path.join(weight_dir, f'{self.model_name}_best.pth'))
+                    else:
+                        early_stop_counter += 1
 
-            # if early_stop_counter >= 3:
-            #     print("Model doest not improve anymore, stop")
-            #     break
+                # if early_stop_counter >= 3:
+                #     print("Model doest not improve anymore, stop")
+                #     break
 
             # Save last epoch
             torch.save({
