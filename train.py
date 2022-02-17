@@ -41,6 +41,7 @@ def parseargs():
     parser.add_argument("--min_class_samples", type=int, default=0)
     parser.add_argument("--nrows", default=0, type=int)
     parser.add_argument("--pool", default='gem', type=str)
+    parser.add_argument("--gradient_accum_steps", default=1, type=int, help='Gradient accumulation steps')
     parser.add_argument("--img_dir", type=str, default='/content/jpeg-happywhale-384x384/train_images-384-384')
     parser.add_argument("--loss", type=str, default='ce', help='ce|ce_smooth|focal')
     parser.add_argument("--neck", type=str, default='D', help='D|F|N')

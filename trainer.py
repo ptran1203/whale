@@ -82,32 +82,33 @@ class Trainer:
             scaler = amp.GradScaler()
 
         with torch.set_grad_enabled(is_train):
-            for images, labels, _ in bar:
+            for batch_idx, (images, labels, _) in enumerate(bar):
                 images = images.to(self.device)
                 labels = labels.to(self.device).long()
 
-                # print(labels)
-
-                if is_train:
-                    self.optim.zero_grad()
+                do_update = is_train and ((batch_idx + 1) % self.cfg.gradient_accum_steps == 0) or (batch_idx + 1 == len(loader))
                 
                 if self.cfg.amp:
                     with amp.autocast():
                         logit = self.model(images, labels)
                         loss = self.criterion(logit, labels)
                         if is_train:
-                            scaler.scale(loss).backward() 
-                            scaler.step(self.optim)
-                            scaler.update()
+                            scaler.scale(loss).backward()
+                            if do_update:
+                                scaler.step(self.optim)
+                                scaler.update()
+                                self.optim.zero_grad()
                 else:
                     logit = self.model(images, labels)
                     loss = self.criterion(logit, labels)
                     if is_train:
                         loss.backward()
-                        self.optim.step()
+                        if do_update:
+                            self.optim.step()
+                            self.optim.zero_grad()
 
                 if is_train and self.scheduler is not None:
-                    self.scheduler.step()  # onecyclelr
+                    self.scheduler.step()
 
                 # Compute metric score
                 pred = torch.softmax(logit.detach(), dim=-1)
