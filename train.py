@@ -96,12 +96,13 @@ def main(args):
 
     print(f'nlabel={n_classes}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
     model = Net(args.backbone, n_classes, args.pool, args.neck, pretrained=True)
+    print(model)
 
     # optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-4, momentum=0.9)
     optimizer = optim.Adam(model.parameters(), lr=args.init_lr, weight_decay=1e-4)
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
     num_train_steps = len(train_loader)
-    print('Training steps:', num_train_steps)
+    # print('Training steps:', num_train_steps)
     scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=num_train_steps * args.warmup_epochs, 
                                                         num_training_steps=int(num_train_steps * (args.epochs)))
     criterion = get_loss_fn(args.loss, n_classes)

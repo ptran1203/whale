@@ -98,8 +98,10 @@ class Net(nn.Module):
     def forward(self, x, labels=None, p=3):
         batch_size = x.shape[0]
         features = self.backbone.forward_features(x)
-        features = self.pooling(features).view(batch_size, -1)
-        
+        features = self.pooling(features)
+        features = features.view(batch_size, -1)
+        # features
+
         features = self.neck(features)
         if labels is not None:
             return self.head(features, labels)
