@@ -62,7 +62,6 @@ def main(args):
     df = pd.read_csv('data/train_kfold.csv')
 
     df = df[df['sample_count'] > args.min_class_samples]
-    n_classes = df.label.nunique()
 
     if args.skip_train:
         # Reload full train data
@@ -72,6 +71,7 @@ def main(args):
         df = df.sample(args.nrows)
 
     df['label'] = LabelEncoder().fit_transform(df.individual_id)
+    n_classes = df.label.nunique()
 
     if args.skip_train:
         train_df = df
