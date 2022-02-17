@@ -88,7 +88,7 @@ class Trainer:
 
                 do_update = is_train and ((batch_idx + 1) % self.cfg.gradient_accum_steps == 0) or (batch_idx + 1 == len(loader))
 
-                print(do_update)
+                # print(do_update)
                 
                 if self.cfg.amp:
                     with amp.autocast():
