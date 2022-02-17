@@ -115,10 +115,11 @@ class Trainer:
                 pred = torch.softmax(logit.detach(), dim=-1)
                 pred_label = torch.argmax(pred, dim=-1).cpu().numpy()
                 acc = (pred_label == labels.cpu().numpy()).mean()
+                loss_val = loss.item() * self.cfg.gradient_accum_steps
                 if is_train:
-                    msg_loss = f"loss: {loss.item():.4f} - acc: {acc:.4f}"
+                    msg_loss = f"loss: {loss_val:.4f} - acc: {acc:.4f}"
                     bar.set_description(msg_loss)
-                scores["loss"].append(loss.item())
+                scores["loss"].append(loss_val)
                 scores["acc"].append(acc)
 
         scores = {k: (np.mean(v) if isinstance(v, list) else v) for k, v in scores.items()}
