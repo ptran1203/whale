@@ -100,11 +100,10 @@ class Net(nn.Module):
         features = self.backbone.forward_features(x)
         features = self.pooling(features)
         features = features.view(batch_size, -1)
-        # features
 
         features = self.neck(features)
         if labels is not None:
-            return self.head(features, labels)
+            return features, self.head(features, labels)
         else:
             return features
 

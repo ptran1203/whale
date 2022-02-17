@@ -15,6 +15,7 @@ import torch.cuda.amp as amp
 import logging
 from dataloader import val_transform, WhaleDataset
 from utils import pickle_save, pickle_load
+from losses import TripletLoss
 
 
 def denorm(img):
@@ -55,8 +56,10 @@ class Trainer:
         self.scheduler = scheduler
         self.best_score = -1
         self.criterion = criterion
+        self.triplet_w = cfg.triplet_w
         self.device = torch.device(("cuda" if torch.cuda.is_available() else "cpu"))
         self.criterion.to(self.device)
+        self.triplet_loss = TripletLoss(margin=0.3)
 
     def init_logger(self, log_dir):
         self.logger = get_train_logger(log_dir)
@@ -92,8 +95,10 @@ class Trainer:
                 
                 if self.cfg.amp:
                     with amp.autocast():
-                        logit = self.model(images, labels)
+                        feat, logit = self.model(images, labels)
                         loss = self.criterion(logit, labels)
+                        if self.triplet_w > 0.0:
+                            loss = loss + self.triplet_w * self.triplet_loss(feat, labels)
                         loss = loss / self.cfg.gradient_accum_steps
                         if is_train:
                             scaler.scale(loss).backward()
@@ -102,8 +107,10 @@ class Trainer:
                                 scaler.update()
                                 self.optim.zero_grad()
                 else:
-                    logit = self.model(images, labels)
+                    feat, logit = self.model(images, labels)
                     loss = self.criterion(logit, labels)
+                    if self.triplet_w > 0.0:
+                        loss = loss + self.triplet_w * self.triplet_loss(feat, labels)
                     if is_train:
                         loss.backward()
                         if do_update:

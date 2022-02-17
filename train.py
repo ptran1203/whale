@@ -46,8 +46,8 @@ def parseargs():
     parser.add_argument("--loss", type=str, default='ce', help='ce|ce_smooth|focal')
     parser.add_argument("--neck", type=str, default='D', help='D|F|N')
     parser.add_argument("--aug", type=str, default='aug1', help='aug config')
-
-
+    parser.add_argument("--triplet_w", type=float, default=0.0)
+    
     return parser.parse_args()
 
 def get_loss_fn(loss_type, n_labels):
