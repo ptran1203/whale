@@ -114,8 +114,8 @@ class Trainer:
                 # Compute metric score
                 pred = torch.softmax(logit.detach(), dim=-1)
                 pred_label = torch.argmax(pred, dim=-1).cpu().numpy()
-                print(pred, pred_label)
-                print(labels.cpu().numpy())
+                # print(pred, pred_label)
+                # print(labels.cpu().numpy())
                 acc = (pred_label == labels.cpu().numpy()).mean()
                 loss_val = loss.item() * self.cfg.gradient_accum_steps
                 if is_train:

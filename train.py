@@ -99,8 +99,8 @@ def main(args):
     model = Net(args.backbone, n_classes, args.pool, args.neck, pretrained=True)
     print(model)
 
-    # optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-4, momentum=0.9)
-    optimizer = optim.Adam(model.parameters(), lr=args.init_lr, weight_decay=1e-4)
+    optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-4, momentum=0.9, nesterov=True)
+    # optimizer = optim.Adam(model.parameters(), lr=args.init_lr, weight_decay=1e-4)
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
     num_train_steps = len(train_loader)
     # print('Training steps:', num_train_steps)
