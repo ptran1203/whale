@@ -47,6 +47,40 @@ def load_my_state_dict(model, state_dict):
             except Exception as e:
                 print(f"Skip {name}: {e}")
 
+
+def get_embs(args, df, save_to=''):
+    aug = importlib.import_module(f'augments.{args.aug}')
+    val_transform = aug.val_transform
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = torch.load(args.weight, map_location='cpu')['model']
+    model = model.to(device)
+    model.eval()
+
+    os.makedirs(args.output, exist_ok=True)
+
+    dataset = WhaleDataset(df, args.img_dir, args.img_size, transform=val_transform(args.img_size))
+    loader = torch.utils.data.DataLoader(dataset, batch_size=64)
+
+    res_dict = {}
+    with torch.no_grad():
+        for imgs, labels, paths in tqdm(loader):
+            imgs = imgs.to(device)
+            embs = model(imgs)
+            logit = torch.softmax(embs, dim=-1)
+            # top5_conf, top5_pred = torch.topk(logit, 5, dim=1)
+            embs = embs.cpu().numpy()
+            for emb, path in zip(embs, paths):
+                # print(emb)
+                # img_id = os.path.basename(path)
+                img_id = path
+                res_dict[img_id] = emb
+
+    if save_to:
+        pickle_save(res_dict, save_to)
+    return res_dict
+
+
 class Trainer:
     def __init__(self, model, optimizer, criterion=nn.CrossEntropyLoss(), scheduler=None, cfg=None):
         self.model = model
@@ -136,30 +170,6 @@ class Trainer:
         scores = {k: (np.mean(v) if isinstance(v, list) else v) for k, v in scores.items()}
         
         return scores
-
-    def predict_on_train(self, train_df):
-        """
-        Run prediction on training dataset
-        """
-        weight_dir = os.path.join(self.cfg.outdir, "weights")
-        last_ckp = os.path.join(weight_dir, f'{self.model_name}_last.pth')
-        ckp = torch.load(last_ckp)
-        load_my_state_dict(self.model, ckp['model'].state_dict())
-        self.model = self.model.to(self.device)
-        self.model.eval()
-        dataset = WhaleDataset(train_df, self.cfg.img_dir, self.cfg.img_size, transform=val_transform(self.cfg.img_size))
-        loader = torch.utils.data.DataLoader(dataset, batch_size=self.cfg.batch_size)
-        res_dict = {}
-        with torch.no_grad():
-            for imgs, labels, ids in tqdm(loader):
-                imgs = imgs.to(self.device)
-                embs = self.model(imgs)
-                embs = embs.cpu().numpy()
-                for emb, id in zip(embs, ids):
-                    res_dict[id] = emb
-
-        pickle_save(res_dict, os.path.join(self.cfg.outdir, "train_embs.pkl"))
-        return res_dict
 
     def train(self, train_loader, val_loader=None):
         """Train process"""

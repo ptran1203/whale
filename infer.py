@@ -48,7 +48,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--img_size', type=int, default=256)
     parser.add_argument('--source', type=str, default='test_images')
-    parser.add_argument('--output', type=str, default='inferences/infer')
+    parser.add_argument('--output', type=str, default='inferences')
     parser.add_argument('--train_embs', default='train_embs.npy')
     parser.add_argument('--aug', default='aug1')
 

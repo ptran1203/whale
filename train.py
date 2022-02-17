@@ -1,12 +1,13 @@
 from model import Net
 from dataloader import WhaleDataset
-from trainer import Trainer
+from trainer import Trainer, get_embs
 from torch.utils.data import DataLoader
 import torch.optim as optim
 import argparse
 import random
 import pandas as pd
 import numpy as np
+import os
 import torch
 import importlib
 import losses
@@ -62,24 +63,16 @@ def main(args):
     df = pd.read_csv('data/train_kfold.csv')
 
     df = df[df['sample_count'] > args.min_class_samples]
-
-    if args.skip_train:
-        # Reload full train data
-        df = pd.read_csv('data/train_kfold.csv')
-
     if args.nrows != 0:
         df = df.sample(args.nrows)
 
     df['label'] = LabelEncoder().fit_transform(df.individual_id)
     n_classes = df.label.nunique()
 
-    if args.skip_train:
-        train_df = df
-        val_df = df
-    else:
-        train_df = df[df.subset == 'train'].reset_index(drop=True)
-        val_df = df[df.subset == 'test'].reset_index(drop=True)
-        # val_df = val_df[val_df.label.isin(train_df.label.unique())]
+    
+    train_df = df[df.subset == 'train'].reset_index(drop=True)
+    val_df = df[df.subset == 'test'].reset_index(drop=True)
+    # val_df = val_df[val_df.label.isin(train_df.label.unique())]
 
     print(f'Train={len(train_df)}, validate={len(val_df)}')
 
@@ -108,9 +101,7 @@ def main(args):
                                                         num_training_steps=int(num_train_steps * (args.epochs)))
     criterion = get_loss_fn(args.loss, n_classes)
     trainer = Trainer(model, optimizer, criterion=criterion, scheduler=scheduler, cfg=args)
-    if not args.skip_train:
-        trainer.train(train_loader, val_loader)
-    trainer.predict_on_train(train_df)
+    trainer.train(train_loader, val_loader)
 
 if __name__ == '__main__':
     init_seeds()
