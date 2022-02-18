@@ -63,8 +63,8 @@ def compute_sim(train_df, train_embs, test_embs):
     sim_df = pd.DataFrame(records, columns=['image', 'predictions'])
     return sim_df
 
-def evaluate(val_df, train_embs, val_embs):
-    sim_df = compute_sim(val_df, train_embs, val_embs)
+def evaluate(val_df, train_embs, val_embs, func=compute_sim):
+    sim_df = func(val_df, train_embs, val_embs)
 
     label_map = dict(zip(val_df.image, val_df.individual_id))
     
@@ -77,7 +77,7 @@ def evaluate(val_df, train_embs, val_embs):
         predictions.append(pred)
 
     score = map_per_set(labels, predictions)
-    return score
+    return score, sim_df
 
 
 if __name__ == '__main__':
@@ -100,5 +100,5 @@ if __name__ == '__main__':
     val_embs = get_embs(args, val_df, save_to=os.path.join(args.output, 'val_embs.pkl'))
     # train_embs = pickle_load(args.train_embs)
 
-    score = evaluate(val_df, train_embs, val_embs)
+    score, _ = evaluate(val_df, train_embs, val_embs)
     print(f"Score={score:.4f}")

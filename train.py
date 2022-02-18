@@ -62,7 +62,7 @@ def get_loss_fn(loss_type, n_labels):
 def main(args):
     df = pd.read_csv('data/train_kfold.csv')
 
-    df = df[df['sample_count'] > args.min_class_samples]
+    df = df[df['sample_count'] >= args.min_class_samples]
     if args.nrows != 0:
         df = df.sample(args.nrows)
 
