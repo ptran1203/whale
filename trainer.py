@@ -16,7 +16,7 @@ import logging
 from dataloader import val_transform, WhaleDataset
 from utils import pickle_save, pickle_load
 from losses import TripletLoss
-
+import importlib
 
 def denorm(img):
     mean = np.array([0.485, 0.456, 0.406])
