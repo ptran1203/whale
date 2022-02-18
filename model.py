@@ -67,7 +67,15 @@ class Net(nn.Module):
         self.backbone = timm.create_model(backbone, pretrained=pretrained)
         self.channel_size = channel_size
         self.out_feature = n_classes
-        self.in_features = self.backbone.classifier.in_features
+
+        if 'efficientnet' in backbone:
+            self.in_features = self.backbone.classifier.in_features
+        elif 'resne' in backbone: # Resnet family
+            self.in_features = self.backbone.fc.in_features
+        elif 'senet' in backbone:
+            self.in_features = self.last_linear.in_features
+        else:
+            raise ValueError(backbone)
 
         if neck == "D":
             self.neck = nn.Sequential(
