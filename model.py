@@ -6,6 +6,11 @@ import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
 
+def freeze_bn(m): 
+    classname = m.__class__.__name__
+    if classname.find('BatchNorm') != -1:
+        m.eval()
+
 def gem(x, p=3, eps=1e-6):
     return F.avg_pool2d(x.clamp(min=eps).pow(p), (x.size(-2), x.size(-1))).pow(1./p)
 class GeM(nn.Module):
@@ -61,13 +66,18 @@ class ArcModule(nn.Module):
 
 class Net(nn.Module):
 
-    def __init__(self, backbone, n_classes, pool='gem', neck='D', channel_size=512, dropout=0.3, pretrained=False):
+    def __init__(self, backbone, n_classes, cfg, channel_size=512, pretrained=False):
         super(Net, self).__init__()
+        neck = cfg.neck
+        pool = cfg.pool
         self.name = backbone
         self.backbone = timm.create_model(backbone, pretrained=pretrained)
         self.channel_size = channel_size
         self.out_feature = n_classes
 
+        if cfg.freeze_bn:
+            self.backbone.apply(freeze_bn)
+            
         if 'efficientnet' in backbone:
             self.in_features = self.backbone.classifier.in_features
         elif 'resne' in backbone: # Resnet family

@@ -37,6 +37,7 @@ def parseargs():
     parser.add_argument("--outdir", type=str, default="runs/exp")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--amp", action="store_true")
+    parser.add_argument("--freeze_bn", action="store_true")
     parser.add_argument("--warmup_epochs", default=1, type=int)
     parser.add_argument("--skip_train", action="store_true")
     parser.add_argument("--min_class_samples", type=int, default=0)
@@ -94,7 +95,7 @@ def main(args):
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
 
     print(f'nlabel={n_classes}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
-    model = Net(args.backbone, n_classes, args.pool, args.neck, pretrained=True)
+    model = Net(args.backbone, n_classes, cfg=args, pretrained=True)
     # print(model)
 
     optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-4, momentum=0.9, nesterov=True)
