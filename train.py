@@ -45,7 +45,7 @@ def parseargs():
     parser.add_argument("--gradient_accum_steps", default=1, type=int, help='Gradient accumulation steps')
     parser.add_argument("--img_dir", type=str, default='/content/jpeg-happywhale-384x384/train_images-384-384')
     parser.add_argument("--loss", type=str, default='ce', help='ce|ce_smooth|focal')
-    parser.add_argument("--neck", type=str, default='D', help='D|F|N')
+    parser.add_argument("--neck", type=str, default='F', help='D|F|N')
     parser.add_argument("--aug", type=str, default='aug1', help='aug config')
     parser.add_argument("--triplet_w", type=float, default=0.0)
     
@@ -60,6 +60,11 @@ def get_loss_fn(loss_type, n_labels):
         return losses.FocalLoss()
 
 def main(args):
+    print(f"GPU {torch.cuda.get_device_name(0)}")
+    if "P100" in torch.cuda.get_device_name(0):
+        args.amp = False
+        print("Turn off amp when using P100")
+
     df = pd.read_csv('data/train_kfold.csv')
 
     df = df[df['sample_count'] >= args.min_class_samples]
