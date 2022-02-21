@@ -100,5 +100,5 @@ if __name__ == '__main__':
     val_embs = get_embs(args, val_df, save_to=os.path.join(args.output, 'val_embs.pkl'))
     # train_embs = pickle_load(args.train_embs)
 
-    score, _ = evaluate(val_df, train_embs, val_embs)
+    score, _ = evaluate(df, train_embs, val_embs)
     print(f"Score={score:.4f}")

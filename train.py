@@ -45,8 +45,9 @@ def parseargs():
     parser.add_argument("--pool", default='gem', type=str)
     parser.add_argument("--gradient_accum_steps", default=1, type=int, help='Gradient accumulation steps')
     parser.add_argument("--img_dir", type=str, default='/content/jpeg-happywhale-384x384/train_images-384-384')
-    parser.add_argument("--loss", type=str, default='ce', help='ce|ce_smooth|focal')
+    parser.add_argument("--loss", type=str, default='ce', help='ce|focal')
     parser.add_argument("--neck", type=str, default='F', help='D|F|N')
+    parser.add_argument("--ls_eps", type=float, default=0.0, help='label smoothing eps')
     parser.add_argument("--aug", type=str, default='aug1', help='aug config')
     parser.add_argument("--triplet_w", type=float, default=0.0)
     
@@ -55,8 +56,6 @@ def parseargs():
 def get_loss_fn(loss_type, n_labels):
     if loss_type == 'ce':
         return torch.nn.CrossEntropyLoss()
-    elif loss_type == 'ce_smooth':
-        return losses.CrossEntropyLossWithLabelSmoothing(n_labels, ls_=0.9)
     elif loss_type == 'focal':
         return losses.FocalLoss()
 

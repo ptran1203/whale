@@ -24,4 +24,4 @@ def val_transform(img_size):
         A.CenterCrop(img_size, img_size),
         # A.Resize(img_size, img_size),
         A.Normalize()
-    ])
+    ])  
