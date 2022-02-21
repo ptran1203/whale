@@ -11,6 +11,17 @@ def freeze_bn(m):
     if classname.find('BatchNorm') != -1:
         m.eval()
 
+def init_weights(m):
+    print(m)
+    if isinstance(m, nn.BatchNorm1d):
+        m.weight.data.fill_(1.0)
+        m.bias.data.fill_(0.0)
+        print(m.weight)
+        print(m.bias)
+    if isinstance(m, nn.Linear):
+        nn.init.xavier_normal(m.weight)
+        print(m.weight)
+
 def gem(x, p=3, eps=1e-6):
     return F.avg_pool2d(x.clamp(min=eps).pow(p), (x.size(-2), x.size(-1))).pow(1./p)
 class GeM(nn.Module):
@@ -117,12 +128,16 @@ class Net(nn.Module):
                 # nn.BatchNorm1d(self.channel_size),
             )
 
+        self.neck.apply(init_weights)
+        print("weight init: DONE")
+
         self.head = ArcMarginProduct(in_features=self.channel_size, out_features=self.out_feature, ls_eps=cfg.ls_eps)
 
         if pool == 'gem':
             self.pooling = GeM(p=3)
         else:
             self.pooling = nn.AdaptiveAvgPool2d(1)
+
 
     def forward(self, x, labels=None, p=3):
         batch_size = x.shape[0]
