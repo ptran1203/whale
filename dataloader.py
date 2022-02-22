@@ -6,34 +6,53 @@ from torch.utils.data import Dataset
 from sklearn.preprocessing import LabelEncoder
 from glob import glob
 
-def train_transform(img_size):
-    return A.Compose([
-        A.SmallestMaxSize(img_size),
-        A.RandomCrop(img_size, img_size, p=1.0),
-        # A.Resize(img_size, img_size),
-        A.HorizontalFlip(p=0.5),
-        A.ImageCompression(quality_lower=99, quality_upper=100, p=0.2),
-        # A.GaussNoise(p=0.1),
-        A.GaussianBlur(blur_limit=3, p=0.1),
-        # A.RGBShift(),
-        A.RandomBrightnessContrast(p=0.7, brightness_limit=(-0.2, 0.2), contrast_limit=(-0.2, 0.2)),
-        A.HueSaturationValue(p=0.7, hue_shift_limit=0.2, sat_shift_limit=0.2, val_shift_limit=0.2),
-        # A.ShiftScaleRotate(p=0.7, shift_limit=0.2, scale_limit=0.2, rotate_limit=20, border_mode=0),
-        # A.Cutout(p=0.5, num_holes=1, max_h_size=int(img_size * 0.3), max_w_size=int(img_size * 0.3)),
-        A.ToGray(p=0.01),
-        A.Normalize()
-    ])
+def random_perspective(im, degrees=30, translate=.1, scale=.1, shear=10, perspective=0.0,
+                       border=(0, 0)):
+    # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(0.1, 0.1), scale=(0.9, 1.1), shear=(-10, 10))
+    # targets = [cls, xyxy]
 
-def val_transform(img_size):
-    return A.Compose([
-        A.SmallestMaxSize(img_size),
-        A.CenterCrop(img_size, img_size),
-        # A.Resize(img_size, img_size),
-        A.Normalize()
-    ])
+    height = im.shape[0] + border[0] * 2  # shape(h,w,c)
+    width = im.shape[1] + border[1] * 2
 
+    # Center
+    C = np.eye(3)
+    C[0, 2] = -im.shape[1] / 2  # x translation (pixels)
+    C[1, 2] = -im.shape[0] / 2  # y translation (pixels)
+
+    # Perspective
+    P = np.eye(3)
+    P[2, 0] = random.uniform(-perspective, perspective)  # x perspective (about y)
+    P[2, 1] = random.uniform(-perspective, perspective)  # y perspective (about x)
+
+    # Rotation and Scale
+    R = np.eye(3)
+    a = random.uniform(-degrees, degrees)
+    # a += random.choice([-180, -90, 0, 90])  # add 90deg rotations to small rotations
+    s = random.uniform(1 - scale, 1 + scale)
+    # s = 2 ** random.uniform(-scale, scale)
+    R[:2] = cv2.getRotationMatrix2D(angle=a, center=(0, 0), scale=s)
+
+    # Shear
+    S = np.eye(3)
+    S[0, 1] = math.tan(random.uniform(-shear, shear) * math.pi / 180)  # x shear (deg)
+    S[1, 0] = math.tan(random.uniform(-shear, shear) * math.pi / 180)  # y shear (deg)
+
+    # Translation
+    T = np.eye(3)
+    T[0, 2] = random.uniform(0.5 - translate, 0.5 + translate) * width  # x translation (pixels)
+    T[1, 2] = random.uniform(0.5 - translate, 0.5 + translate) * height  # y translation (pixels)
+
+    # Combined rotation matrix
+    M = T @ S @ R @ P @ C  # order of operations (right to left) is IMPORTANT
+    if (border[0] != 0) or (border[1] != 0) or (M != np.eye(3)).any():  # image changed
+        if perspective:
+            im = cv2.warpPerspective(im, M, dsize=(width, height), borderValue=(0, 0, 0))
+        else:  # affine
+            im = cv2.warpAffine(im, M[:2], dsize=(width, height), borderValue=(0, 0, 0))
+
+    return im
 class WhaleDataset(Dataset):
-    def __init__(self, train_df, img_dir, img_size=256, transform=train_transform):
+    def __init__(self, train_df, img_dir, img_size=256, transform=None):
         self.df = train_df
         self.transform = transform
         self.img_size = img_size
@@ -45,6 +64,7 @@ class WhaleDataset(Dataset):
         img = cv2.imread(img_path)
         assert img is not None, img_path
         # img = cv2.resize(img[:, :, ::-1], (self.img_size, self.img_size))
+        img = random_perspective(img, degrees=10, translate=0.1, scale=0.2, shear=10, perspective=0.0)
         if self.transform is not None:
             img = self.transform(image=img)['image']
 
@@ -55,7 +75,7 @@ class WhaleDataset(Dataset):
 
 
 class InferDataset(Dataset):
-    def __init__(self, img_dir, img_size=256, transform=val_transform):
+    def __init__(self, img_dir, img_size=256, transform=None):
         self.transform = transform
         self.img_size = img_size
         self.load_data(img_dir)
