@@ -8,15 +8,15 @@ gkf = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
 
 df['fold'] = -1
 
-for i, (_, idx) in enumerate(gkf.split(df, df.species)):
+for i, (_, idx) in enumerate(gkf.split(df, df.individual_id)):
     df.loc[idx, 'fold'] = i
 
 
 df['sample_count'] = df.groupby(['individual_id'])['individual_id'].transform('count')
 df['subset'] = 'train'
 
-df.loc[df['fold'] == 0, 'subset'] = 'test'
-df.loc[df['sample_count'] < 6, 'subset'] = 'train'
+# df.loc[df['fold'] == 0, 'subset'] = 'test'
+# df.loc[df['sample_count'] < 6, 'subset'] = 'train'
 
 
 

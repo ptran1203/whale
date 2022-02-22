@@ -76,9 +76,10 @@ def main(args):
     n_classes = df.label.nunique()
 
     
-    train_df = df[df.subset == 'train'].reset_index(drop=True)
-    val_df = df[df.subset == 'test'].reset_index(drop=True)
-    # val_df = val_df[val_df.label.isin(train_df.label.unique())]
+    # train_df = df[df.subset == 'train'].reset_index(drop=True)
+    # val_df = df[df.subset == 'test'].reset_index(drop=True)
+    train_df = df[df.fold != args.fold].reset_index(drop=True)
+    val_df = df[df.fold == args.fold].reset_index(drop=True)
 
     print(f'Train={len(train_df)}, validate={len(val_df)}')
 
