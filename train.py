@@ -38,6 +38,7 @@ def parseargs():
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--amp", action="store_true")
     parser.add_argument("--freeze_bn", action="store_true")
+    parser.add_argument("--cv_aug", action="store_true")
     parser.add_argument("--warmup_epochs", default=1, type=int)
     parser.add_argument("--skip_train", action="store_true")
     parser.add_argument("--min_class_samples", type=int, default=0)
@@ -84,7 +85,7 @@ def main(args):
     aug = importlib.import_module(f'augments.{args.aug}')
     train_transform, val_transform = aug.train_transform, aug.val_transform
 
-    dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=train_transform(args.img_size))
+    dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=train_transform(args.img_size), cv2_aug=args.cv2_aug)
     val_data = WhaleDataset(val_df, args.img_dir, args.img_size, transform=val_transform(args.img_size))
 
     print("Train aug", dataset.transform)

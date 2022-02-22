@@ -4,6 +4,7 @@ import numpy as np
 import random
 import albumentations as A
 import torch
+import math
 from torch.utils.data import Dataset
 from sklearn.preprocessing import LabelEncoder
 from glob import glob
@@ -55,10 +56,11 @@ def random_perspective(im, degrees=30, translate=.1, scale=.1, shear=10, perspec
     return im
 
 class WhaleDataset(Dataset):
-    def __init__(self, train_df, img_dir, img_size=256, transform=None):
+    def __init__(self, train_df, img_dir, img_size=256, transform=None, cv2_aug=False):
         self.df = train_df
         self.transform = transform
         self.img_size = img_size
+        self.cv2_aug = cv2_aug
         self.df['img_path'] = self.df['image'].apply(lambda x: os.path.join(img_dir, x))
 
     def __getitem__(self, index):
@@ -67,7 +69,8 @@ class WhaleDataset(Dataset):
         img = cv2.imread(img_path)
         assert img is not None, img_path
         # img = cv2.resize(img[:, :, ::-1], (self.img_size, self.img_size))
-        img = random_perspective(img, degrees=10, translate=0.1, scale=0.2, shear=10, perspective=0.0)
+        if self.cv2_aug:
+            img = random_perspective(img, degrees=10, translate=0.1, scale=0.2, shear=10, perspective=0.0)
         if self.transform is not None:
             img = self.transform(image=img)['image']
 
