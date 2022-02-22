@@ -1,5 +1,7 @@
 import os
 import cv2
+import numpy as np
+import random
 import albumentations as A
 import torch
 from torch.utils.data import Dataset
@@ -51,6 +53,7 @@ def random_perspective(im, degrees=30, translate=.1, scale=.1, shear=10, perspec
             im = cv2.warpAffine(im, M[:2], dsize=(width, height), borderValue=(0, 0, 0))
 
     return im
+
 class WhaleDataset(Dataset):
     def __init__(self, train_df, img_dir, img_size=256, transform=None):
         self.df = train_df
