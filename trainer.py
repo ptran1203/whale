@@ -13,7 +13,7 @@ from scipy import spatial
 import cv2
 import torch.cuda.amp as amp
 import logging
-from dataloader import val_transform, WhaleDataset
+from dataloader import WhaleDataset
 from utils import pickle_save, pickle_load
 from losses import TripletLoss
 import importlib
