@@ -85,7 +85,7 @@ def main(args):
     aug = importlib.import_module(f'augments.{args.aug}')
     train_transform, val_transform = aug.train_transform, aug.val_transform
 
-    dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=train_transform(args.img_size), cv2_aug=args.cv2_aug)
+    dataset = WhaleDataset(train_df, args.img_dir, args.img_size, transform=train_transform(args.img_size), cv2_aug=args.cv_aug)
     val_data = WhaleDataset(val_df, args.img_dir, args.img_size, transform=val_transform(args.img_size))
 
     print("Train aug", dataset.transform)
