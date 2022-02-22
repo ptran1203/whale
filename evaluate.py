@@ -3,19 +3,20 @@ import numpy as np
 import pandas as pd
 import argparse
 import torch
-from dataloader import InferDataset, WhaleDataset, val_transform
+from dataloader import InferDataset, WhaleDataset
 from tqdm.auto import tqdm
 from utils import pickle_save, pickle_load
 from collections import defaultdict
 import importlib
 from trainer import get_embs
 
-
+def l2norm_numpy(x):
+    return x / np.linalg.norm(x, ord=2, axis=1, keepdims=True)
 
 def dict2list(embs):
     keys = list(embs.keys())
     values = [embs[k] for k in keys]
-    return keys, np.stack(values)
+    return keys, l2norm_numpy(np.stack(values))
 
 def map_per_image(label, predictions):
     try:
