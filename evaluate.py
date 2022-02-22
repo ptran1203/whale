@@ -64,6 +64,32 @@ def compute_sim(train_df, train_embs, test_embs):
     sim_df = pd.DataFrame(records, columns=['image', 'predictions'])
     return sim_df
 
+
+def compute_sim2(train_df, train_embs, test_embs):
+    # Compute center of each individual id
+
+    train_k, train_v = dict2list(train_embs)
+    test_k, test_v = dict2list(test_embs)
+
+    cos = np.matmul(test_v, train_v.T)
+
+    records = []
+
+    for i, scores in enumerate(tqdm(cos)):
+        sort_idx = np.argsort(scores)[::-1]
+        top5 = [train_k[j] for j in sort_idx[:5]]
+
+        for j in range(5):
+            sim_score = scores[sort_idx[j]]
+            if j == 1:#sim_score < 0.5:
+                top5 = top5[:j] + ['new_individual'] + top5[j:4]
+                break
+            
+        records.append([test_k[i], " ".join(top5)])
+
+    sim_df = pd.DataFrame(records, columns=['image', 'predictions'])
+    return sim_df
+
 def evaluate(val_df, train_embs, val_embs, func=compute_sim):
     sim_df = func(val_df, train_embs, val_embs)
 
