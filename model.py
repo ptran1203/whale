@@ -12,15 +12,11 @@ def freeze_bn(m):
         m.eval()
 
 def init_weights(m):
-    print(m)
     if isinstance(m, nn.BatchNorm1d):
         m.weight.data.fill_(1.0)
         m.bias.data.fill_(0.0)
-        print(m.weight)
-        print(m.bias)
     if isinstance(m, nn.Linear):
         nn.init.xavier_normal(m.weight)
-        print(m.weight)
 
 def gem(x, p=3, eps=1e-6):
     return F.avg_pool2d(x.clamp(min=eps).pow(p), (x.size(-2), x.size(-1))).pow(1./p)
