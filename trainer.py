@@ -219,6 +219,11 @@ class Trainer:
         start = time.time()
         self.model.to(self.device)
 
+        for e in range(start_epoch):
+            # Update scheduler to current epochs
+            for _ in train_loader:
+                self.scheduler.step()
+
         for epoch in range(start_epoch, epochs):
             train_scores = self.run_epoch(train_loader)
 
