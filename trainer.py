@@ -145,6 +145,7 @@ class Trainer:
                     loss = self.criterion(logit, labels)
                     if self.triplet_w > 0.0:
                         loss = loss + self.triplet_w * self.triplet_loss(feat, labels)
+                    loss = loss / self.cfg.gradient_accum_steps
                     if is_train:
                         loss.backward()
                         if do_update:
