@@ -38,6 +38,7 @@ def parseargs():
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--amp", action="store_true")
     parser.add_argument("--freeze_bn", action="store_true")
+    parser.add_argument("--m", type=float, default=0.3)
     parser.add_argument("--cv_aug", action="store_true")
     parser.add_argument("--warmup_epochs", default=1, type=int)
     parser.add_argument("--skip_train", action="store_true")

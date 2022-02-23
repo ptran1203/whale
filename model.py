@@ -127,7 +127,8 @@ class Net(nn.Module):
         self.neck.apply(init_weights)
         print("weight init: DONE")
 
-        self.head = ArcMarginProduct(in_features=self.channel_size, out_features=self.out_feature, ls_eps=cfg.ls_eps)
+        self.head = ArcMarginProduct(in_features=self.channel_size, out_features=self.out_feature,
+                                    ls_eps=cfg.ls_eps, m=args.m)
 
         if pool == 'gem':
             self.pooling = GeM(p=3)
