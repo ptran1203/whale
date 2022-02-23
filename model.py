@@ -119,9 +119,9 @@ class Net(nn.Module):
             )
         else:
             self.neck = nn.Sequential(
-                nn.Dropout(0.2),
-                nn.Linear(self.in_features, self.channel_size, bias=False),
-                # nn.BatchNorm1d(self.channel_size),
+                nn.Dropout(0.3),
+                nn.Linear(self.in_features, self.channel_size),
+                nn.BatchNorm1d(self.channel_size),
             )
 
         self.neck.apply(init_weights)
