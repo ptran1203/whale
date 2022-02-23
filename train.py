@@ -62,9 +62,9 @@ def get_loss_fn(loss_type, n_labels):
 
 def main(args):
     print(f"GPU {torch.cuda.get_device_name(0)}")
-    if "P100" in torch.cuda.get_device_name(0):
-        args.amp = False
-        print("Turn off amp when using P100")
+    # if "P100" in torch.cuda.get_device_name(0):
+    #     args.amp = False
+    #     print("Turn off amp when using P100")
 
     df = pd.read_csv('data/train_kfold.csv')
 
