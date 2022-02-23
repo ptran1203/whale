@@ -2,7 +2,7 @@ import os
 import numpy as np
 import argparse
 import torch
-from dataloader import InferDataset, val_transform
+from dataloader import InferDataset
 from tqdm.auto import tqdm
 from utils import pickle_save, pickle_load
 import augments
