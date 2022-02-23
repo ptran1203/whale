@@ -96,17 +96,17 @@ def main(args):
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
 
     print(f'nlabel={n_classes}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
-    model = Net(args.backbone, n_classes, cfg=args, pretrained=True)
+    model = Net(args.backbone, 15587, cfg=args, pretrained=True)
     # print(model)
 
-    # optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-4, momentum=0.9, nesterov=True)
-    optimizer = optim.Adam(model.parameters(), lr=args.init_lr, weight_decay=5e-4)
+    optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=5e-4, momentum=0.9, nesterov=False)
+    # optimizer = optim.Adam(model.parameters(), lr=args.init_lr, weight_decay=5e-4)
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
     num_train_steps = len(train_loader)
     # print('Training steps:', num_train_steps)
     scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=num_train_steps * args.warmup_epochs, 
                                                         num_training_steps=int(num_train_steps * (args.epochs)))
-    criterion = get_loss_fn(args.loss, n_classes)
+    criterion = get_loss_fn(args.loss, 15587)
     trainer = Trainer(model, optimizer, criterion=criterion, scheduler=scheduler, cfg=args)
     trainer.train(train_loader, val_loader)
 
