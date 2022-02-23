@@ -227,7 +227,7 @@ class Trainer:
         for epoch in range(start_epoch, epochs):
             train_scores = self.run_epoch(train_loader)
 
-            do_valid = epoch % 5 == 0
+            do_valid = epoch % 2 == 0
 
             if do_valid:
                 test_scores = self.run_epoch(val_loader, is_train=False)
