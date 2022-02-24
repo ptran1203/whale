@@ -42,4 +42,4 @@ function download2 {
     fi
 }
 
-download2 whale-512
+download2 $1

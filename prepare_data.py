@@ -26,9 +26,10 @@ y = le.fit_transform(df.individual_id)
 df['label'] = y
 
 
-train_df = df.query('subset == "train"')
-val_df = df.query('subset == "test"')
+train_df = df.query('fold != 0')
+val_df = df.query('fold == 0')
 print(f'nlabel={df.label.nunique()}train={train_df.label.nunique()}, test={val_df.label.nunique()}')
+print(f"Test in train={len(set(val_df.label.unique()) - set(train_df.label.unique()))}")
 print(len(train_df), len(val_df))
 df.to_csv('data/train_kfold.csv', index=False)
 
