@@ -10,7 +10,7 @@ class HardTripletLoss(nn.Module):
     (pytorch implementation of https://omoindrot.github.io/triplet-loss)
     For each anchor, we get the hardest positive and hardest negative to form a triplet.
     """
-    def __init__(self, margin=0.1, hardest=False, squared=False):
+    def __init__(self, margin=0.3, hardest=False, squared=False):
         """
         Args:
             margin: margin for triplet loss

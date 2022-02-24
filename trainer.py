@@ -15,8 +15,8 @@ import torch.cuda.amp as amp
 import logging
 from dataloader import WhaleDataset
 from utils import pickle_save, pickle_load
-from losses import TripletLoss
 import importlib
+from losses import HardTripletLoss
 
 def denorm(img):
     mean = np.array([0.485, 0.456, 0.406])
@@ -93,7 +93,7 @@ class Trainer:
         self.triplet_w = cfg.triplet_w
         self.device = torch.device(("cuda" if torch.cuda.is_available() else "cpu"))
         self.criterion.to(self.device)
-        self.triplet_loss = TripletLoss(margin=0.3)
+        self.triplet_loss = HardTripletLoss()
 
     def init_logger(self, log_dir):
         self.logger = get_train_logger(log_dir)
