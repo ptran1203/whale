@@ -35,6 +35,45 @@ class GeM(nn.Module):
     def __repr__(self):
         return f'GeM(p={self.p})'
 
+
+class AdaCos(nn.Module):
+    def __init__(self, in_features, out_features, m=0.50, ls_eps=0, theta_zero=math.pi/4):
+        super(AdaCos, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.theta_zero = theta_zero
+        self.s = math.log(out_features - 1) / math.cos(theta_zero)
+        self.m = m
+        self.ls_eps = ls_eps  # label smoothing
+        self.weight = Parameter(torch.FloatTensor(out_features, in_features))
+        nn.init.xavier_uniform_(self.weight)
+
+    def forward(self, input, label):
+        # normalize features
+        x = F.normalize(input)
+        # normalize weights
+        W = F.normalize(self.weight)
+        # dot product
+        logits = F.linear(x, W)
+        # add margin
+        theta = torch.acos(torch.clamp(logits, -1.0 + 1e-7, 1.0 - 1e-7))
+        target_logits = torch.cos(theta + self.m)
+        one_hot = torch.zeros_like(logits)
+        one_hot.scatter_(1, label.view(-1, 1).long(), 1)
+        if self.ls_eps > 0:
+            one_hot = (1 - self.ls_eps) * one_hot + self.ls_eps / self.out_features
+        output = logits * (1 - one_hot) + target_logits * one_hot
+        # feature re-scale
+        with torch.no_grad():
+            B_avg = torch.where(one_hot < 1, torch.exp(self.s * logits), torch.zeros_like(logits))
+            B_avg = torch.sum(B_avg) / input.size(0)
+            theta_med = torch.median(theta)
+            self.s = torch.log(B_avg) / torch.cos(torch.min(self.theta_zero * torch.ones_like(theta_med), theta_med))
+        output *= self.s
+
+        return output
+
+
 class ArcMarginProduct(nn.Module):
     r"""Implement of large margin arc distance: :
         Args:
@@ -127,8 +166,11 @@ class Net(nn.Module):
         self.neck.apply(init_weights)
         print("weight init: DONE")
 
-        self.head = ArcMarginProduct(in_features=self.channel_size, out_features=self.out_feature,
-                                    ls_eps=cfg.ls_eps, m=cfg.m)
+        if cfg.head == "arcface":
+            self.head = ArcMarginProduct(in_features=self.channel_size, out_features=self.out_feature,
+                                        ls_eps=cfg.ls_eps, m=cfg.m)
+        elif cfg.head == "adacos":
+            self.head = AdaCos(self.channel_size, self.out_feature, m=cfg.m, ls_eps=cfg.ls_eps)
 
         if pool == 'gem':
             self.pooling = GeM(p=3)

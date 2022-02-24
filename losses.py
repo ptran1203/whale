@@ -5,75 +5,141 @@ from torch.autograd import Variable
 
 
 
-def l2_norm(input, axis=1):
-    norm = torch.norm(input,2, axis, True)
-    output = torch.div(input, norm)
-    return output
+class HardTripletLoss(nn.Module):
+    """Hard/Hardest Triplet Loss
+    (pytorch implementation of https://omoindrot.github.io/triplet-loss)
+    For each anchor, we get the hardest positive and hardest negative to form a triplet.
+    """
+    def __init__(self, margin=0.1, hardest=False, squared=False):
+        """
+        Args:
+            margin: margin for triplet loss
+            hardest: If true, loss is considered only hardest triplets.
+            squared: If true, output is the pairwise squared euclidean distance matrix.
+                If false, output is the pairwise euclidean distance matrix.
+        """
+        super(HardTripletLoss, self).__init__()
+        self.margin = margin
+        self.hardest = hardest
+        self.squared = squared
 
-def euclidean_dist(x, y):
+    def forward(self, embeddings, labels):
+        """
+        Args:
+            labels: labels of the batch, of size (batch_size,)
+            embeddings: tensor of shape (batch_size, embed_dim)
+        Returns:
+            triplet_loss: scalar tensor containing the triplet loss
+        """
+        pairwise_dist = _pairwise_distance(embeddings, squared=self.squared)
 
-    m, n = x.size(0), y.size(0)
-    xx = torch.pow(x, 2).sum(1, keepdim=True).expand(m, n)
-    yy = torch.pow(y, 2).sum(1, keepdim=True).expand(n, m).t()
-    dist = xx + yy
-    dist.addmm_(1, -2, x, y.t())
-    dist = dist.clamp(min=1e-12).sqrt()  # for numerical stability
-    return dist
+        if self.hardest:
+            # Get the hardest positive pairs
+            mask_anchor_positive = _get_anchor_positive_triplet_mask(labels).float()
+            valid_positive_dist = pairwise_dist * mask_anchor_positive
+            hardest_positive_dist, _ = torch.max(valid_positive_dist, dim=1, keepdim=True)
 
-def hard_example_mining(dist_mat, labels, return_inds=False):
+            # Get the hardest negative pairs
+            mask_anchor_negative = _get_anchor_negative_triplet_mask(labels).float()
+            max_anchor_negative_dist, _ = torch.max(pairwise_dist, dim=1, keepdim=True)
+            anchor_negative_dist = pairwise_dist + max_anchor_negative_dist * (
+                    1.0 - mask_anchor_negative)
+            hardest_negative_dist, _ = torch.min(anchor_negative_dist, dim=1, keepdim=True)
 
-    assert len(dist_mat.size()) == 2
-    assert dist_mat.size(0) == dist_mat.size(1)
-    N = dist_mat.size(0)
+            # Combine biggest d(a, p) and smallest d(a, n) into final triplet loss
+            triplet_loss = F.relu(hardest_positive_dist - hardest_negative_dist + 0.1)
+            triplet_loss = torch.mean(triplet_loss)
+        else:
+            anc_pos_dist = pairwise_dist.unsqueeze(dim=2)
+            anc_neg_dist = pairwise_dist.unsqueeze(dim=1)
 
-    # shape [N, N]
-    is_pos = labels.expand(N, N).eq(labels.expand(N, N).t())
-    is_neg = labels.expand(N, N).ne(labels.expand(N, N).t())
+            # Compute a 3D tensor of size (batch_size, batch_size, batch_size)
+            # triplet_loss[i, j, k] will contain the triplet loss of anc=i, pos=j, neg=k
+            # Uses broadcasting where the 1st argument has shape (batch_size, batch_size, 1)
+            # and the 2nd (batch_size, 1, batch_size)
+            loss = anc_pos_dist - anc_neg_dist + self.margin
 
-    # `dist_ap` means distance(anchor, positive)
-    # both `dist_ap` and `relative_p_inds` with shape [N, 1]
-    dist_ap, relative_p_inds = torch.max(
-        dist_mat[is_pos].contiguous().view(N, -1), 1, keepdim=True)
-    # `dist_an` means distance(anchor, negative)
-    # both `dist_an` and `relative_n_inds` with shape [N, 1]
-    dist_an, relative_n_inds = torch.min(
-        dist_mat[is_neg].contiguous().view(N, -1), 1, keepdim=True)
-    # shape [N]
-    dist_ap = dist_ap.squeeze(1)
-    dist_an = dist_an.squeeze(1)
+            mask = _get_triplet_mask(labels).float()
+            triplet_loss = loss * mask
 
-    if return_inds:
-        # shape [N, N]
-        ind = (labels.new().resize_as_(labels)
-               .copy_(torch.arange(0, N).long())
-               .unsqueeze(0).expand(N, N))
-        # shape [N, 1]
-        p_inds = torch.gather(
-            ind[is_pos].contiguous().view(N, -1), 1, relative_p_inds.data)
-        n_inds = torch.gather(
-            ind[is_neg].contiguous().view(N, -1), 1, relative_n_inds.data)
-        # shape [N]
-        p_inds = p_inds.squeeze(1)
-        n_inds = n_inds.squeeze(1)
-        return dist_ap, dist_an, p_inds, n_inds
+            # Remove negative losses (i.e. the easy triplets)
+            triplet_loss = F.relu(triplet_loss)
 
-    return dist_ap, dist_an
+            # Count number of hard triplets (where triplet_loss > 0)
+            hard_triplets = torch.gt(triplet_loss, 1e-16).float()
+            num_hard_triplets = torch.sum(hard_triplets)
 
-class CrossEntropyLossWithLabelSmoothing(nn.Module):
-    def __init__(self, n_dim, ls_=0.9):
-        super().__init__()
-        self.n_dim = n_dim
-        self.ls_ = ls_
+            triplet_loss = torch.sum(triplet_loss) / (num_hard_triplets + 1e-16)
 
-    def forward(self, x, target):
-        target = F.one_hot(target, self.n_dim).float()
-        target *= self.ls_
-        target += (1 - self.ls_) / self.n_dim
+        return triplet_loss
 
-        logprobs = F.log_softmax(x, dim=-1)
-        loss = -logprobs * target
-        loss = loss.sum(-1)
-        return loss.mean()
+
+def _pairwise_distance(x, squared=False, eps=1e-16):
+    # Compute the 2D matrix of distances between all the embeddings.
+
+    cor_mat = torch.matmul(x, x.t())
+    norm_mat = cor_mat.diag()
+    distances = norm_mat.unsqueeze(1) - 2 * cor_mat + norm_mat.unsqueeze(0)
+    distances = F.relu(distances)
+
+    if not squared:
+        mask = torch.eq(distances, 0.0).float()
+        distances = distances + mask * eps
+        distances = torch.sqrt(distances)
+        distances = distances * (1.0 - mask)
+
+    return distances
+
+
+def _get_anchor_positive_triplet_mask(labels):
+    # Return a 2D mask where mask[a, p] is True iff a and p are distinct and have same label.
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    indices_not_equal = torch.eye(labels.shape[0]).to(device).byte() ^ 1
+
+    # Check if labels[i] == labels[j]
+    labels_equal = torch.unsqueeze(labels, 0) == torch.unsqueeze(labels, 1)
+
+    mask = indices_not_equal * labels_equal
+
+    return mask
+
+
+def _get_anchor_negative_triplet_mask(labels):
+    # Return a 2D mask where mask[a, n] is True iff a and n have distinct labels.
+
+    # Check if labels[i] != labels[k]
+    labels_equal = torch.unsqueeze(labels, 0) == torch.unsqueeze(labels, 1)
+    mask = labels_equal ^ 1
+
+    return mask
+
+
+def _get_triplet_mask(labels):
+    """return a 3d mask where mask[a, p, n] is true if the triplet (a, p, n) is valid.
+    a triplet (i, j, k) is valid if:
+        - i, j, k are distinct
+        - labels[i] == labels[j] and labels[i] != labels[k]
+    """
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    # Check that i, j and k are distinct
+    indices_not_same = torch.eye(labels.shape[0]).to(device).byte() ^ 1
+    i_not_equal_j = torch.unsqueeze(indices_not_same, 2)
+    i_not_equal_k = torch.unsqueeze(indices_not_same, 1)
+    j_not_equal_k = torch.unsqueeze(indices_not_same, 0)
+    distinct_indices = i_not_equal_j * i_not_equal_k * j_not_equal_k
+
+    # Check if labels[i] == labels[j] and labels[i] != labels[k]
+    label_equal = torch.eq(torch.unsqueeze(labels, 0), torch.unsqueeze(labels, 1))
+    i_equal_j = torch.unsqueeze(label_equal, 2)
+    i_equal_k = torch.unsqueeze(label_equal, 1)
+    valid_labels = i_equal_j * (i_equal_k ^ 1)
+
+    mask = distinct_indices * valid_labels   # Combine the two masks
+
+    return mask
 
 class FocalLoss(nn.Module):
 
@@ -89,33 +155,3 @@ class FocalLoss(nn.Module):
         p = torch.exp(-logp)
         loss = (1 - p) ** self.gamma * logp
         return loss.mean()
-
-class TripletLoss(object):
-    """Modified from Tong Xiao's open-reid (https://github.com/Cysu/open-reid).
-    Related Triplet Loss theory can be found in paper 'In Defense of the Triplet
-    Loss for Person Re-Identification'."""
-
-    def __init__(self, margin=None):
-        self.margin = margin
-
-        if margin is not None:
-            self.ranking_loss = nn.MarginRankingLoss(margin=margin)
-        else:
-            self.ranking_loss = nn.SoftMarginLoss()
-
-    def __call__(self, global_feat, labels):
-
-
-        global_feat = l2_norm(global_feat)
-
-        dist_mat = euclidean_dist(global_feat, global_feat)
-        dist_ap, dist_an = hard_example_mining(dist_mat, labels)
-
-        y = dist_an.new().resize_as_(dist_an).fill_(1)
-
-        if self.margin is not None:
-            loss = self.ranking_loss(dist_an, dist_ap, y)
-        else:
-            loss = self.ranking_loss(dist_an - dist_ap, y)
-
-        return loss

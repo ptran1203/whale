@@ -52,6 +52,7 @@ def parseargs():
     parser.add_argument("--ls_eps", type=float, default=0.0, help='label smoothing eps')
     parser.add_argument("--aug", type=str, default='aug1', help='aug config')
     parser.add_argument("--triplet_w", type=float, default=0.0)
+    parser.add_argument("--head", type=str, default='arcface', help='arcface|adacos')
     
     return parser.parse_args()
 
