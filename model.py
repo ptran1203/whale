@@ -7,9 +7,9 @@ from torch.nn.parameter import Parameter
 
 
 def freeze_bn(m): 
-    classname = m.__class__.__name__
-    if classname.find('BatchNorm') != -1:
+    if isinstance(m, nn.BatchNorm2d):
         m.eval()
+        print('freeze_bn')
 
 def init_weights(m):
     if isinstance(m, nn.BatchNorm1d):
@@ -160,7 +160,6 @@ class Net(nn.Module):
             self.neck = nn.Sequential(
                 nn.Dropout(0.3),
                 nn.Linear(self.in_features, self.channel_size),
-                nn.BatchNorm1d(self.channel_size),
             )
 
         self.neck.apply(init_weights)
