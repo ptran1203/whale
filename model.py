@@ -44,7 +44,7 @@ class ArcMarginProduct(nn.Module):
             m: margin
             cos(theta + m)
         """
-    def __init__(self, in_features, out_features, s=30.0, m=0.3, easy_margin=False, ls_eps=0.9):
+    def __init__(self, in_features, out_features, s=30.0, m=0.5, easy_margin=False, ls_eps=0.9):
         super(ArcMarginProduct, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -119,15 +119,16 @@ class Net(nn.Module):
             )
         else:
             self.neck = nn.Sequential(
-                nn.Dropout(0.2),
-                nn.Linear(self.in_features, self.channel_size, bias=False),
-                # nn.BatchNorm1d(self.channel_size),
+                nn.Dropout(0.3),
+                nn.Linear(self.in_features, self.channel_size),
+                nn.BatchNorm1d(self.channel_size),
             )
 
         self.neck.apply(init_weights)
         print("weight init: DONE")
 
-        self.head = ArcMarginProduct(in_features=self.channel_size, out_features=self.out_feature, ls_eps=cfg.ls_eps)
+        self.head = ArcMarginProduct(in_features=self.channel_size, out_features=self.out_feature,
+                                    ls_eps=cfg.ls_eps, m=cfg.m)
 
         if pool == 'gem':
             self.pooling = GeM(p=3)

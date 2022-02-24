@@ -145,6 +145,7 @@ class Trainer:
                     loss = self.criterion(logit, labels)
                     if self.triplet_w > 0.0:
                         loss = loss + self.triplet_w * self.triplet_loss(feat, labels)
+                    loss = loss / self.cfg.gradient_accum_steps
                     if is_train:
                         loss.backward()
                         if do_update:
@@ -219,10 +220,15 @@ class Trainer:
         start = time.time()
         self.model.to(self.device)
 
+        # for e in range(start_epoch):
+        #     # Update scheduler to current epochs
+        #     for _ in range(len(train_loader)):
+        #         self.scheduler.step()
+
         for epoch in range(start_epoch, epochs):
             train_scores = self.run_epoch(train_loader)
 
-            do_valid = epoch % 5 == 0
+            do_valid = epoch % 2 == 0
 
             if do_valid:
                 test_scores = self.run_epoch(val_loader, is_train=False)

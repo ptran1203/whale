@@ -16,7 +16,7 @@ def l2norm_numpy(x):
 def dict2list(embs):
     keys = list(embs.keys())
     values = [embs[k] for k in keys]
-    return keys, l2norm_numpy(np.stack(values))
+    return keys, np.stack(values)
 
 def map_per_image(label, predictions):
     try:

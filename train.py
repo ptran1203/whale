@@ -38,6 +38,7 @@ def parseargs():
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--amp", action="store_true")
     parser.add_argument("--freeze_bn", action="store_true")
+    parser.add_argument("--m", type=float, default=0.3)
     parser.add_argument("--cv_aug", action="store_true")
     parser.add_argument("--warmup_epochs", default=1, type=int)
     parser.add_argument("--skip_train", action="store_true")
@@ -62,9 +63,9 @@ def get_loss_fn(loss_type, n_labels):
 
 def main(args):
     print(f"GPU {torch.cuda.get_device_name(0)}")
-    if "P100" in torch.cuda.get_device_name(0):
-        args.amp = False
-        print("Turn off amp when using P100")
+    # if "P100" in torch.cuda.get_device_name(0):
+    #     args.amp = False
+    #     print("Turn off amp when using P100")
 
     df = pd.read_csv('data/train_kfold.csv')
 
@@ -99,8 +100,8 @@ def main(args):
     model = Net(args.backbone, n_classes, cfg=args, pretrained=True)
     # print(model)
 
-    optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=1e-4, momentum=0.9, nesterov=True)
-    # optimizer = optim.Adam(model.parameters(), lr=args.init_lr, weight_decay=1e-4)
+    optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=5e-4, momentum=0.9, nesterov=False)
+    # optimizer = optim.Adam(model.parameters(), lr=args.init_lr, weight_decay=5e-4)
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
     num_train_steps = len(train_loader)
     # print('Training steps:', num_train_steps)
