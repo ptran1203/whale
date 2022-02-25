@@ -30,7 +30,8 @@ def map_per_set(labels, predictions):
     """
     return np.mean([map_per_image(l, p) for l,p in zip(labels, predictions)])
 
-def compute_sim(train_df, train_embs, test_embs):
+
+def compute_sim(train_df, train_embs, test_embs, thr=0.65):
     # Compute center of each individual id
     label2emb = defaultdict(list)
     for label, d in train_df.groupby('individual_id'):
@@ -50,15 +51,19 @@ def compute_sim(train_df, train_embs, test_embs):
     records = []
 
     for i, scores in enumerate(tqdm(cos)):
+        # if test_k[i] not in ["7d0f46dd5f4108.jpg", "7a785b700b0339.jpg", "50df0a954eb94c.jpg", "2e773c92752df2.jpg", "3c52966f74d2ad.jpp"]:
+        #     continue
         sort_idx = np.argsort(scores)[::-1]
         top5 = [train_k[j] for j in sort_idx[:5]]
+        # top5 = [train_map[x] for x in top5]
 
-        for j in range(5):
-            sim_score = scores[sort_idx[j]]
-            if j == 1:#sim_score < 0.5:
-                top5 = top5[:j] + ['new_individual'] + top5[j:4]
-                break
-            
+        if scores[sort_idx[0]] < thr:
+            top5 = ['new_individual'] + top5[:4]
+        else:
+            top5 = top5[:1] + ['new_individual'] + top5[1:4]
+        
+        # print(test_k[i], [f"{train_k[j]}({scores[j]:.3f})" for j in sort_idx[:5]])
+        # print(scores[-1])
         records.append([test_k[i], " ".join(top5)])
 
     sim_df = pd.DataFrame(records, columns=['image', 'predictions'])
@@ -91,7 +96,7 @@ def compute_sim2(train_df, train_embs, test_embs):
     return sim_df
 
 def evaluate(val_df, train_embs, val_embs, func=compute_sim):
-    sim_df = func(val_df, train_embs, val_embs)
+    sim_df = func(val_df, train_embs, val_embs, thr=1.0)
 
     label_map = dict(zip(val_df.image, val_df.individual_id))
     
