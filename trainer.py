@@ -152,8 +152,8 @@ class Trainer:
                             self.optim.step()
                             self.optim.zero_grad()
 
-                if is_train and self.scheduler is not None:
-                    self.scheduler.step()
+                # if is_train and self.scheduler is not None:
+                #     self.scheduler.step()
 
                 # Compute metric score
                 pred = torch.softmax(logit.detach(), dim=-1)
@@ -242,6 +242,9 @@ class Trainer:
             msg = ", ".join(msg)
             self.logger.info(msg)
             print(msg)
+
+            if self.scheduler is not None:
+                self.scheduler.step()
 
             if do_valid:
                 score = test_scores['acc']

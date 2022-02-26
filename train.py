@@ -13,7 +13,7 @@ import importlib
 import losses
 import math
 from sklearn.preprocessing import LabelEncoder
-from utils import get_cosine_schedule_with_warmup
+from utils import get_cosine_schedule_with_warmup, GradualWarmupSchedulerV2
 
 
 
@@ -103,11 +103,16 @@ def main(args):
 
     optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=5e-4, momentum=0.9, nesterov=False)
     # optimizer = optim.Adam(model.parameters(), lr=args.init_lr, weight_decay=5e-4)
+
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
+
+    cosine_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs - args.warmup_epochs)
+    scheduler = GradualWarmupSchedulerV2(optimizer, multiplier=10, total_epoch=args.warmup_epochs,
+                                        after_scheduler=cosine_scheduler)
+
     num_train_steps = len(train_loader)
-    # print('Training steps:', num_train_steps)
-    scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=num_train_steps * args.warmup_epochs, 
-                                                        num_training_steps=int(num_train_steps * (args.epochs)))
+    # scheduler = get_cosine_schedule_with_warmup(optimizer, num_warmup_steps=num_train_steps * args.warmup_epochs, 
+    #                                                     num_training_steps=int(num_train_steps * (args.epochs)))
     criterion = get_loss_fn(args.loss, n_classes)
     trainer = Trainer(model, optimizer, criterion=criterion, scheduler=scheduler, cfg=args)
     trainer.train(train_loader, val_loader)

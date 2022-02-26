@@ -6,3 +6,4 @@ pandas
 timm
 tqdm==4.62.3
 matplotlib
+git+https://github.com/ildoonet/pytorch-gradual-warmup-lr.git
