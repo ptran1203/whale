@@ -60,7 +60,7 @@ def get_embs(args, df, save_to=''):
     os.makedirs(args.output, exist_ok=True)
 
     dataset = WhaleDataset(df, args.img_dir, args.img_size, transform=val_transform(args.img_size))
-    loader = torch.utils.data.DataLoader(dataset, batch_size=32)
+    loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size)
 
     res_dict = {}
     with torch.no_grad():
