@@ -101,8 +101,10 @@ def main(args):
     model = Net(args.backbone, n_classes, cfg=args, pretrained=True)
     # print(model)
 
-    optimizer = optim.SGD(model.parameters(), lr=args.init_lr, weight_decay=5e-4, momentum=0.9, nesterov=False)
-    # optimizer = optim.Adam(model.parameters(), lr=args.init_lr, weight_decay=5e-4)
+    params = filter(lambda l: l.requires_grad, model.parameters())
+    print(len(params), len(model.parameters()))
+    optimizer = optim.SGD(params, lr=args.init_lr, weight_decay=5e-4, momentum=0.9, nesterov=False)
+    # optimizer = optim.Adam(params, lr=args.init_lr, weight_decay=5e-4)
 
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
 

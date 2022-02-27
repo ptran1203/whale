@@ -6,10 +6,14 @@ import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
 
-def freeze_bn(m): 
-    if isinstance(m, nn.BatchNorm2d):
-        m.eval()
-        print('freeze_bn')
+def freeze_bn(model): 
+    for module in model.modules():
+        if isinstance(module, nn.BatchNorm2d):
+            if hasattr(module, 'weight'):
+                module.weight.requires_grad_(False)
+            if hasattr(module, 'bias'):
+                module.bias.requires_grad_(False)
+            module.eval()
 
 def init_weights(m):
     if isinstance(m, nn.BatchNorm1d):
@@ -132,7 +136,7 @@ class Net(nn.Module):
         self.out_feature = n_classes
 
         if cfg.freeze_bn:
-            self.backbone.apply(freeze_bn)
+            freeze_bn(self.backbone)
             
         if 'efficientnet' in backbone:
             self.in_features = self.backbone.classifier.in_features
