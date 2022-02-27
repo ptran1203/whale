@@ -22,7 +22,7 @@ def denorm(img):
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
     img = img * std + mean
-    return (img * 255).astype(np.uint8)
+    return (img[:,:,::-1] * 255).astype(np.uint8)
 
 def get_train_logger(log_dir='./logs'):
     logger = logging.getLogger('stamp')
