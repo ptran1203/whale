@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import cv2
 import pandas as pd
-from evaluate import compute_sim, evaluate
+from evaluate import compute_sim, evaluate, map_per_image
 import argparse
 
 def l2norm(embs):
