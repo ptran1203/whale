@@ -22,7 +22,7 @@ def infer(args):
     print(len(dataset))
     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size)
 
-    train_embs = pickle_load(args.train_embs)
+    # train_embs = pickle_load(args.train_embs)
 
     res_dict = {}
     with torch.no_grad():

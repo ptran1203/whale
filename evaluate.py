@@ -115,7 +115,7 @@ def evaluate(val_df, train_embs, val_embs, func=compute_sim):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--weight', type=str)
-    parser.add_argument('--batch_size', type=int, default=64)
+    parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--img_size', type=int, default=256)
     parser.add_argument('--output', type=str, default='inferences/')
     parser.add_argument("--img_dir", type=str, default='/content/whale-512/kaggle/working/data/train_images')
