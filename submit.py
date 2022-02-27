@@ -19,6 +19,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--src', default='.')
+    parser.add_argument('--thr', default=0.5, type=float)
     parser.add_argument('--norm', action='store_true')
 
     args = parser.parse_args()
@@ -48,7 +49,7 @@ if __name__ == '__main__':
     
     print(f"Evaluate score={score:.4f}")
 
-    sim_df = compute_sim(train_df, train_embs, test_embs)
+    sim_df = compute_sim(train_df, train_embs, test_embs, thr=args.thr)
     sim_df[["image", "predictions"]].to_csv("submission.csv", index=False)
     print(sim_df.head())
     subprocess.check_output('kaggle competitions submit -c happy-whale-and-dolphin -f submission.csv -m "Message"'.split(" "))
