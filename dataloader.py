@@ -70,7 +70,7 @@ class WhaleDataset(Dataset):
         assert img is not None, img_path
         # img = cv2.resize(img[:, :, ::-1], (self.img_size, self.img_size))
         if self.cv2_aug:
-            img = random_perspective(img, degrees=10, translate=0.0, scale=0.2, shear=5, perspective=0.0)
+            img = random_perspective(img, degrees=10, translate=0.0, scale=0.2, shear=5, perspective=0.001)
         if self.transform is not None:
             img = self.transform(image=img)['image']
 
