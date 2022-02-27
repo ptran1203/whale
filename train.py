@@ -115,7 +115,20 @@ def main(args):
     #                                                     num_training_steps=int(num_train_steps * (args.epochs)))
     criterion = get_loss_fn(args.loss, n_classes)
     trainer = Trainer(model, optimizer, criterion=criterion, scheduler=scheduler, cfg=args)
-    trainer.train(train_loader, val_loader)
+    weight = trainer.train(train_loader, val_loader)
+
+    from evaluate import evaluate
+    from infer import infer
+
+    train_embs = get_embs(args, train_df, save_to=os.path.join(args.project, 'train_embs.pkl'))
+    val_embs = get_embs(args, val_df, save_to=os.path.join(args.project, 'val_embs.pkl'))
+
+    evaluate(pd.read_csv('data/train_kfold.csv'), train_embs, val_embs)
+
+    args.weight = weight
+    args.source = args.img_dir.replace("train_images", "test_images")
+    args.output = args.project
+    infer(args)
 
 if __name__ == '__main__':
     init_seeds()

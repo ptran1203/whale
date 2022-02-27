@@ -133,4 +133,8 @@ if __name__ == '__main__':
     # train_embs = pickle_load(args.train_embs)
 
     score, _ = evaluate(df, train_embs, val_embs)
+
+    train_df = df[df.fold != args.fold].reset_index(drop=True)
+    val_df = df[df.fold == args.fold].reset_index(drop=True)
+
     print(f"Score={score:.4f}")
