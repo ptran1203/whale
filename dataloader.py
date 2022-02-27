@@ -66,7 +66,7 @@ class WhaleDataset(Dataset):
     def __getitem__(self, index):
         row = self.df.iloc[index]
         img_path, label = row['img_path'], row['label']
-        img = cv2.imread(img_path)
+        img = cv2.imread(img_path)[:, :, ::-1]
         assert img is not None, img_path
         # img = cv2.resize(img[:, :, ::-1], (self.img_size, self.img_size))
         if self.cv2_aug:
@@ -88,7 +88,7 @@ class InferDataset(Dataset):
 
     def __getitem__(self, index):
         img_path = self.data[index]
-        img = cv2.imread(img_path)
+        img = cv2.imread(img_path)[:, :, ::-1]
         # img = cv2.resize(img[:, :, ::-1], (self.img_size, self.img_size))
         img = self.transform(image=img)['image']
 
