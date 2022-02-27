@@ -68,7 +68,7 @@ class WhaleDataset(Dataset):
         img_path, label = row['img_path'], row['label']
         img = cv2.imread(img_path)[:, :, ::-1]
         assert img is not None, img_path
-        # img = cv2.resize(img[:, :, ::-1], (self.img_size, self.img_size))
+
         if self.cv2_aug:
             img = random_perspective(img, degrees=10, translate=0.0, scale=0.2, shear=5, perspective=0.001)
         if self.transform is not None:
@@ -89,7 +89,6 @@ class InferDataset(Dataset):
     def __getitem__(self, index):
         img_path = self.data[index]
         img = cv2.imread(img_path)[:, :, ::-1]
-        # img = cv2.resize(img[:, :, ::-1], (self.img_size, self.img_size))
         img = self.transform(image=img)['image']
 
         return torch.from_numpy(img.transpose(2, 0, 1)), os.path.basename(img_path)
