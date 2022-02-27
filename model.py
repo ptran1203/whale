@@ -7,14 +7,17 @@ from torch.nn.parameter import Parameter
 
 
 def freeze_bn(model): 
+    c = 0
     for module in model.modules():
         if isinstance(module, nn.BatchNorm2d):
             if hasattr(module, 'weight'):
                 module.weight.requires_grad_(False)
             if hasattr(module, 'bias'):
                 module.bias.requires_grad_(False)
-            print(f"Freeze {module}")
+            c += 1
             module.eval()
+
+    print(f"Freeze {c} batchnorm layers")
 
 def init_weights(m):
     if isinstance(m, nn.BatchNorm1d):
