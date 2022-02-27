@@ -13,6 +13,7 @@ def freeze_bn(model):
                 module.weight.requires_grad_(False)
             if hasattr(module, 'bias'):
                 module.bias.requires_grad_(False)
+            print(f"Freeze {module}")
             module.eval()
 
 def init_weights(m):
