@@ -120,8 +120,8 @@ def main(args):
     from evaluate import evaluate
     from infer import infer
 
-    train_embs = get_embs(args, train_df, save_to=os.path.join(args.project, 'train_embs.pkl'))
-    val_embs = get_embs(args, val_df, save_to=os.path.join(args.project, 'val_embs.pkl'))
+    train_embs = get_embs(args, train_df, save_to=os.path.join(args.outdir, 'train_embs.pkl'))
+    val_embs = get_embs(args, val_df, save_to=os.path.join(args.outdir, 'val_embs.pkl'))
 
     evaluate(pd.read_csv('data/train_kfold.csv'), train_embs, val_embs)
 
