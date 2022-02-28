@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
     score, _ = evaluate(df, train_embs, val_embs)
 
-    train_df = df[df.fold != args.fold].reset_index(drop=True)
-    val_df = df[df.fold == args.fold].reset_index(drop=True)
+    train_df = df[df.fold != 0].reset_index(drop=True)
+    val_df = df[df.fold == 0].reset_index(drop=True)
 
     print(f"Score={score:.4f}")

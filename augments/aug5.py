@@ -18,7 +18,7 @@ def train_transform(img_size):
 def val_transform(img_size):
     return A.Compose([
         # A.Resize(img_size, img_size),
-        A.Resize(int(img_size * 1.15), int(img_size * 1.15)),
+        A.Resize(int(img_size * 1.1), int(img_size * 1.1)),
         A.CenterCrop(img_size, img_size, p=1.0),
         A.Normalize()
     ])
