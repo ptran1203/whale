@@ -120,14 +120,15 @@ def main(args):
     from evaluate import evaluate
     from infer import infer
 
+    args.weight = weight
+    args.source = args.img_dir.replace("train_images", "test_images")
+    args.output = args.outdir
+
     train_embs = get_embs(args, train_df, save_to=os.path.join(args.outdir, 'train_embs.pkl'))
     val_embs = get_embs(args, val_df, save_to=os.path.join(args.outdir, 'val_embs.pkl'))
 
     evaluate(pd.read_csv('data/train_kfold.csv'), train_embs, val_embs)
-
-    args.weight = weight
-    args.source = args.img_dir.replace("train_images", "test_images")
-    args.output = args.outdir
+    
     infer(args)
 
 if __name__ == '__main__':
