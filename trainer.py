@@ -274,4 +274,4 @@ class Trainer:
             }, last_ckp)
 
         self.logger.info(f"Training is completed, elapsed: {(time.time() - start):.3f}s")
-        return self.best_score
+        return last_ckp
