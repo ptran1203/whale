@@ -127,7 +127,8 @@ def main(args):
     train_embs = get_embs(args, train_df, save_to=os.path.join(args.outdir, 'train_embs.pkl'))
     val_embs = get_embs(args, val_df, save_to=os.path.join(args.outdir, 'val_embs.pkl'))
 
-    evaluate(pd.read_csv('data/train_kfold.csv'), train_embs, val_embs)
+    score, sim_df = evaluate(pd.read_csv('data/train_kfold.csv'), train_embs, val_embs)
+    print(f"Eval={score:.4f}")
     
     infer(args)
 
