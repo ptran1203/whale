@@ -127,7 +127,7 @@ def main(args):
 
     args.weight = weight
     args.source = args.img_dir.replace("train_images", "test_images")
-    args.output = args.project
+    args.output = args.outdir
     infer(args)
 
 if __name__ == '__main__':
