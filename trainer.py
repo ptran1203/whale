@@ -18,6 +18,19 @@ from utils import pickle_save, pickle_load
 import importlib
 from losses import HardTripletLoss
 
+def adjust_hard_ratio(ep):
+    if ep < 3:
+        hard_ratio = 1 * 1e-2
+    elif ep < 10:
+        hard_ratio = 7 * 1e-3
+    elif ep < 15:
+        hard_ratio = 6 * 1e-3
+    elif ep < 20:
+        hard_ratio = 5 * 1e-3
+    else:
+        hard_ratio = 4 * 1e-3
+    return hard_ratio
+
 def denorm(img):
     mean = np.array([0.485, 0.456, 0.406])
     std = np.array([0.229, 0.224, 0.225])
@@ -83,7 +96,7 @@ def get_embs(args, df, save_to=''):
 
 
 class Trainer:
-    def __init__(self, model, optimizer, criterion=nn.CrossEntropyLoss(), scheduler=None, cfg=None):
+    def __init__(self, model, optimizer, criterion=None, scheduler=None, cfg=None):
         self.model = model
         self.model_name = model.name
         self.optim = optimizer
@@ -128,6 +141,8 @@ class Trainer:
 
                 # labels = self.onehot()
 
+                hard_ratio = adjust_hard_ratio(epoch) if self.cfg.ohem else 0.0
+
                 if is_train and epoch >= self.cfg.warmup_epochs and np.random.rand() <= self.cfg.mixup:
                     # Do mixup
                     # images = torch.stack(images).cuda()
@@ -147,7 +162,7 @@ class Trainer:
                 if self.cfg.amp:
                     with amp.autocast():
                         feat, logit = self.model(images, labels)
-                        loss = self.criterion(logit, labels)
+                        loss = self.criterion(logit, labels, ohem=hard_ratio)
                         if self.triplet_w > 0.0:
                             loss = loss + self.triplet_w * self.triplet_loss(feat, labels)
                         loss = loss / self.cfg.gradient_accum_steps
@@ -159,7 +174,7 @@ class Trainer:
                                 self.optim.zero_grad()
                 else:
                     feat, logit = self.model(images, labels)
-                    loss = self.criterion(logit, labels)
+                    loss = self.criterion(logit, labels, ohem=hard_ratio)
                     if self.triplet_w > 0.0:
                         loss = loss + self.triplet_w * self.triplet_loss(feat, labels)
                     loss = loss / self.cfg.gradient_accum_steps

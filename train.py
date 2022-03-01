@@ -2,6 +2,7 @@ from model import Net
 from dataloader import WhaleDataset
 from trainer import Trainer, get_embs
 from torch.utils.data import DataLoader
+import torch.nn.functional as F
 import torch.optim as optim
 import argparse
 import random
@@ -12,6 +13,7 @@ import torch
 import importlib
 import losses
 import math
+from losses import ce_loss
 from sklearn.preprocessing import LabelEncoder
 from utils import get_cosine_schedule_with_warmup, GradualWarmupSchedulerV2
 
@@ -41,6 +43,7 @@ def parseargs():
     parser.add_argument("--freeze_bn", action="store_true")
     parser.add_argument("--m", type=float, default=0.3)
     parser.add_argument("--cv_aug", action="store_true")
+    parser.add_argument("--ohem", action="store_true")
     parser.add_argument("--warmup_epochs", default=1, type=int)
     parser.add_argument("--mixup", type=float, default=0.0)
     parser.add_argument("--min_class_samples", type=int, default=0)
@@ -64,7 +67,7 @@ def parseargs():
 
 def get_loss_fn(loss_type, n_labels):
     if loss_type == 'ce':
-        return torch.nn.CrossEntropyLoss()
+        return ce_loss
     elif loss_type == 'focal':
         return losses.FocalLoss()
 

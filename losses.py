@@ -155,3 +155,12 @@ class FocalLoss(nn.Module):
         p = torch.exp(-logp)
         loss = (1 - p) ** self.gamma * logp
         return loss.mean()
+
+
+def ce_loss(input, target, ohem=0.0):
+    if ohem == 0:
+        return F.cross_entropy(input, target)
+    else:
+        loss = F.cross_entropy(input, target, reduction=None)
+        value, index= loss.topk(int(13619 * ohem), dim=1, largest=True, sorted=True)
+        return value.mean()
