@@ -115,7 +115,7 @@ def main(args):
     # scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs)
 
     cosine_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, args.epochs - args.warmup_epochs)
-    scheduler = GradualWarmupSchedulerV2(optimizer, multiplier=10, total_epoch=args.warmup_epochs,
+    scheduler = GradualWarmupSchedulerV2(optimizer, multiplier=100, total_epoch=args.warmup_epochs,
                                         after_scheduler=cosine_scheduler)
 
     num_train_steps = len(train_loader)
