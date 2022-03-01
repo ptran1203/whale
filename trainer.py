@@ -194,7 +194,7 @@ class Trainer:
                 # Compute metric score
                 pred = torch.softmax(logit.detach(), dim=-1)
                 pred_label = torch.argmax(pred, dim=-1)
-                acc = (pred_label == labels).mean().item()
+                acc = ((pred_label == labels).sum() / len(labels)).item()
                 loss_val = loss.item() * self.cfg.gradient_accum_steps
                 if is_train:
                     msg_loss = f"loss: {loss_val:.4f} - acc: {acc:.4f}"
