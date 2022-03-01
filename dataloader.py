@@ -74,7 +74,7 @@ class WhaleDataset(Dataset):
         if self.transform is not None:
             img = self.transform(image=img)['image']
 
-        return torch.from_numpy(img.transpose(2, 0, 1)), torch.tensor(label), row['image']
+        return torch.as_tensor(img.transpose(2, 0, 1)), torch.as_tensor(label), row['image']
 
     def __len__(self):
         return len(self.df)
@@ -91,7 +91,7 @@ class InferDataset(Dataset):
         img = cv2.imread(img_path)[:, :, ::-1]
         img = self.transform(image=img)['image']
 
-        return torch.from_numpy(img.transpose(2, 0, 1)), os.path.basename(img_path)
+        return torch.as_tensor(img.transpose(2, 0, 1)), os.path.basename(img_path)
 
     def __len__(self):
         return len(self.data)
