@@ -41,7 +41,7 @@ def parseargs():
     parser.add_argument("--m", type=float, default=0.3)
     parser.add_argument("--cv_aug", action="store_true")
     parser.add_argument("--warmup_epochs", default=1, type=int)
-    parser.add_argument("--skip_train", action="store_true")
+    parser.add_argument("--mixup", type=float, default=0.0)
     parser.add_argument("--min_class_samples", type=int, default=0)
     parser.add_argument("--nrows", default=0, type=int)
     parser.add_argument("--pool", default='gem', type=str)

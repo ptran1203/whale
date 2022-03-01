@@ -99,7 +99,7 @@ class Trainer:
     def init_logger(self, log_dir):
         self.logger = get_train_logger(log_dir)
 
-    def run_epoch(self, loader, is_train=True):
+    def run_epoch(self, loader, is_train=True, epoch=0):
         """
         Train/eval one epoch
         Args:
@@ -121,6 +121,18 @@ class Trainer:
 
         with torch.set_grad_enabled(is_train):
             for batch_idx, (images, labels, _) in enumerate(bar):
+
+                # labels = self.onehot()
+
+                if is_train and epoch >= self.cfg.warmup_epochs and np.random.rand() <= self.cfg.mixup:
+                    # Do mixup
+                    # images = torch.stack(images).cuda()
+                    shuffle_indices = torch.randperm(images.size(0))
+                    indices = torch.arange(images.size(0))
+                    lam = np.clip(np.random.beta(1.0, 1.0), 0.35, 0.65)
+                    images = lam * images + (1 - lam) * images[shuffle_indices, :]
+                    labels = lam * labels + (1 - lam) * labels[shuffle_indices, :]
+
                 images = images.to(self.device)
                 labels = labels.to(self.device).long()
 
@@ -227,7 +239,7 @@ class Trainer:
         #         self.scheduler.step()
 
         for epoch in range(start_epoch, epochs):
-            train_scores = self.run_epoch(train_loader)
+            train_scores = self.run_epoch(train_loader, epoch=epoch)
 
             do_valid = epoch % 2 == 0
 
