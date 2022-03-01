@@ -55,7 +55,12 @@ def parseargs():
     parser.add_argument("--triplet_w", type=float, default=0.0)
     parser.add_argument("--head", type=str, default='arcface', help='arcface|adacos')
     
-    return parser.parse_args()
+    args = parser.parse_args()
+    # for arg in vars(args):
+    #     print(f'{arg}={getattr(args, arg)}')
+    # exit()
+    print(args)
+    return args
 
 def get_loss_fn(loss_type, n_labels):
     if loss_type == 'ce':
