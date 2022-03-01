@@ -134,4 +134,4 @@ if __name__ == '__main__':
 
     score, _ = evaluate(df, train_embs, val_embs)
 
-    print(f"Score={score:.4f}")
+    print(f"Score={score:.4f}") 
