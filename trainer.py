@@ -227,6 +227,8 @@ class Trainer:
                 ckp = torch.load(last_ckp)
                 load_my_state_dict(self.model, ckp['model'].state_dict())
                 start_epoch = ckp['epoch'] + 1
+                self.optim.load_state_dict(ckp['optim'])
+                self.scheduler.load_my_state_dict(ckp['scheduler'])
                 self.logger.info(f"Resume training from epoch {start_epoch}")
                 print(f"Resume training from epoch {start_epoch}")
             else:
@@ -236,11 +238,6 @@ class Trainer:
         # Train
         start = time.time()
         self.model.to(self.device)
-
-        # for e in range(start_epoch):
-        #     # Update scheduler to current epochs
-        #     for _ in range(len(train_loader)):
-        #         self.scheduler.step()
 
         for epoch in range(start_epoch, epochs):
             train_scores = self.run_epoch(train_loader, epoch=epoch)
@@ -275,6 +272,8 @@ class Trainer:
                         torch.save({
                             'epoch': epoch,
                             'model': self.model,
+                            'optim': self.optim.state_dict(),
+                            'scheduler': self.scheduler.state_dict(),
                         }, os.path.join(weight_dir, f'{self.model_name}_best.pth'))
                     else:
                         early_stop_counter += 1
@@ -287,6 +286,8 @@ class Trainer:
             torch.save({
                 'epoch': epoch,
                 'model': self.model,
+                'optim': self.optim.state_dict(),
+                'scheduler': self.scheduler.state_dict(),
             }, last_ckp)
 
         self.logger.info(f"Training is completed, elapsed: {(time.time() - start):.3f}s")
