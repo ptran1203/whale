@@ -17,8 +17,6 @@ from losses import ce_loss
 from sklearn.preprocessing import LabelEncoder
 from utils import get_cosine_schedule_with_warmup, GradualWarmupSchedulerV2
 
-
-
 def init_seeds(seed=0):
     # Initialize random number generator (RNG) seeds https://pytorch.org/docs/stable/notes/randomness.html
     # cudnn seed 0 settings are slower and more reproducible, else faster and less reproducible
@@ -144,5 +142,5 @@ def main(args):
     infer(args)
 
 if __name__ == '__main__':
-    init_seeds()
+    init_seeds(42)
     main(parseargs())
