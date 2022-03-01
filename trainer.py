@@ -171,7 +171,9 @@ class Trainer:
                             if do_update:
                                 scaler.step(self.optim)
                                 scaler.update()
-                                self.optim.zero_grad()
+                                # self.optim.zero_grad()
+                                for param in self.model.parameters():
+                                    param.grad = None
                 else:
                     feat, logit = self.model(images, labels)
                     loss = self.criterion(logit, labels, ohem=hard_ratio)
@@ -181,8 +183,11 @@ class Trainer:
                     if is_train:
                         loss.backward()
                         if do_update:
+                            # nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=2.0, norm_type=2)
                             self.optim.step()
-                            self.optim.zero_grad()
+                            # self.optim.zero_grad()
+                            for param in self.model.parameters():
+                                param.grad = None
 
                 # if is_train and self.scheduler is not None:
                 #     self.scheduler.step()
