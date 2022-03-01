@@ -125,16 +125,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     df = pd.read_csv('data/train_kfold.csv')
-    train_df = df[df.subset == 'train']
-    val_df = df[df.subset == 'test']
+    train_df = df[df.fold != 0].reset_index(drop=True)
+    val_df = df[df.fold == 0].reset_index(drop=True)
 
     train_embs = get_embs(args, train_df, save_to=os.path.join(args.output, 'train_embs.pkl'))
     val_embs = get_embs(args, val_df, save_to=os.path.join(args.output, 'val_embs.pkl'))
     # train_embs = pickle_load(args.train_embs)
 
     score, _ = evaluate(df, train_embs, val_embs)
-
-    train_df = df[df.fold != 0].reset_index(drop=True)
-    val_df = df[df.fold == 0].reset_index(drop=True)
 
     print(f"Score={score:.4f}")
