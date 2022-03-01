@@ -7,9 +7,8 @@ def train_transform(img_size):
         A.HueSaturationValue(p=0.75, hue_shift_limit=0.01, sat_shift_limit=0.3, val_shift_limit=0.2),
         A.CLAHE(p=0.1),
         A.MotionBlur(p=0.2),
-        A.Resize(int(img_size * 1.15), int(img_size * 1.15)),
-        A.RandomCrop(img_size, img_size, p=1.0),
-        A.Cutout(p=0.5, num_holes=1, max_h_size=int(img_size * 0.1), max_w_size=int(img_size * 0.1)),
+        A.Resize(img_size, img_size),
+        # A.Cutout(p=0.0, num_holes=1, max_h_size=int(img_size * 0.1), max_w_size=int(img_size * 0.1)),
         A.Normalize()
     ])
 
