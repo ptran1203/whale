@@ -37,6 +37,7 @@ def parseargs():
     parser.add_argument("--outdir", type=str, default="runs/exp")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--amp", action="store_true")
+    parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--freeze_bn", action="store_true")
     parser.add_argument("--m", type=float, default=0.3)
     parser.add_argument("--cv_aug", action="store_true")
@@ -63,7 +64,9 @@ def get_loss_fn(loss_type, n_labels):
         return losses.FocalLoss()
 
 def main(args):
-    print(f"GPU {torch.cuda.get_device_name(0)}")
+
+    if args.device == "cuda":
+        print(f"GPU {torch.cuda.get_device_name(0)}")
     # if "P100" in torch.cuda.get_device_name(0):
     #     args.amp = False
     #     print("Turn off amp when using P100")

@@ -92,7 +92,11 @@ class Trainer:
         self.best_score = -1
         self.criterion = criterion
         self.triplet_w = cfg.triplet_w
-        self.device = torch.device(("cuda" if torch.cuda.is_available() else "cpu"))
+        if cfg.device == "tpu":
+            import torch_xla.core.xla_model as xm
+            self.device = xm.xla_device()
+        else:
+            self.device = torch.device(("cuda" if torch.cuda.is_available() else "cpu"))
         self.criterion.to(self.device)
         self.triplet_loss = HardTripletLoss()
 
