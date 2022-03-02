@@ -91,7 +91,7 @@ class ArcMarginProduct(nn.Module):
             m: margin
             cos(theta + m)
         """
-    def __init__(self, in_features, out_features, s=30.0, m=0.5, easy_margin=False, ls_eps=0.9):
+    def __init__(self, in_features, out_features, s=30.0, m=0.5, easy_margin=False, ls_eps=0.9, device='cuda'):
         super(ArcMarginProduct, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
@@ -118,7 +118,7 @@ class ArcMarginProduct(nn.Module):
             phi = torch.where(cosine > self.th, phi, cosine - self.mm)
         # --------------------------- convert label to one-hot ---------------------------
         # one_hot = torch.zeros(cosine.size(), requires_grad=True, device='cuda')
-        one_hot = torch.zeros(cosine.size(), device='cuda')
+        one_hot = torch.zeros(cosine.size(), device=self.device)
         one_hot.scatter_(1, label.view(-1, 1).long(), 1)
         if self.ls_eps > 0:
             one_hot = (1 - self.ls_eps) * one_hot + self.ls_eps / self.out_features
@@ -138,6 +138,12 @@ class Net(nn.Module):
         self.backbone = timm.create_model(backbone, pretrained=pretrained)
         self.channel_size = channel_size
         self.out_feature = n_classes
+
+        if cfg.device == "tpu":
+            import torch_xla.core.xla_model as xm
+            self.device = xm.xla_device()
+        else:
+            self.device = torch.device(("cuda" if torch.cuda.is_available() else "cpu"))
 
         if cfg.freeze_bn:
             freeze_bn(self.backbone)
@@ -175,7 +181,7 @@ class Net(nn.Module):
 
         if cfg.head == "arcface":
             self.head = ArcMarginProduct(in_features=self.channel_size, out_features=self.out_feature,
-                                        ls_eps=cfg.ls_eps, m=cfg.m)
+                                        ls_eps=cfg.ls_eps, m=cfg.m, device=self.device)
         elif cfg.head == "adacos":
             self.head = AdaCos(self.channel_size, self.out_feature, m=cfg.m, ls_eps=cfg.ls_eps)
 

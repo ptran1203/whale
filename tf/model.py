@@ -13,6 +13,8 @@ import json
 import tensorflow_hub as tfhub
 from datetime import datetime
 
+n_species = 26
+
 # Arcmarginproduct class keras layer
 class ArcMarginProduct(tf.keras.layers.Layer):
     '''
