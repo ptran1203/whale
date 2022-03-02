@@ -140,9 +140,8 @@ class Net(nn.Module):
         self.channel_size = channel_size
         self.out_feature = n_classes
 
-        if cfg.device == "tpu":
-            import torch_xla.core.xla_model as xm
-            self.device = xm.xla_device()
+        if not isinstance(cfg.device, str):
+            self.device = cfg.device
         else:
             self.device = torch.device(("cuda" if torch.cuda.is_available() else "cpu"))
 
