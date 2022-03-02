@@ -104,6 +104,8 @@ class Trainer:
         self.scheduler = scheduler
         self.best_score = -1
         self.criterion = criterion
+        self.tpu = not isinstance(cfg.device, str)
+        print(f"Use TPU={self.tpu}")
         self.triplet_w = cfg.triplet_w
         if not isinstance(cfg.device, str):
             self.device = cfg.device
@@ -182,7 +184,11 @@ class Trainer:
                         loss.backward()
                         if do_update:
                             # nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=2.0, norm_type=2)
-                            self.optim.step()
+                            if self.tpu:
+                                import torch_xla.core.xla_model as xm
+                                xm.optimizer_step.step(self.optim)
+                            else:
+                                self.optim.step()
                             # self.optim.zero_grad()
                             for param in self.model.parameters():
                                 param.grad = None
