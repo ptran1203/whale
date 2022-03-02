@@ -250,7 +250,7 @@ class Trainer:
                 load_my_state_dict(self.model, ckp['model'].state_dict())
                 start_epoch = ckp['epoch'] + 1
                 self.optim.load_state_dict(ckp['optim'])
-                self.scheduler.load_my_state_dict(ckp['scheduler'])
+                self.scheduler.load_state_dict(ckp['scheduler'])
                 self.logger.info(f"Resume training from epoch {start_epoch}")
                 print(f"Resume training from epoch {start_epoch}")
             else:
