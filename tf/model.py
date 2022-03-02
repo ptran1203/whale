@@ -204,6 +204,23 @@ class ModelGA(tf.keras.Model):
         for i in range(len(self.gradient_accumulation)):
             self.gradient_accumulation[i].assign(tf.zeros_like(self.trainable_variables[i], dtype=tf.float32))
 
+
+class GeM(tf.keras.layers.Layer):
+    def __init__(self, p=3., train_p=False):
+        super().__init__()
+        if train_p:
+            self.p = tf.Variable(p, dtype=tf.float32)
+        else:
+            self.p = p
+        self.eps = 1e-6
+
+    def call(self, inputs: tf.Tensor, **kwargs):
+        inputs = tf.clip_by_value(inputs, clip_value_min=1e-6, clip_value_max=tf.reduce_max(inputs))
+        inputs = tf.pow(inputs, self.p)
+        inputs = tf.reduce_mean(inputs, axis=[1, 2], keepdims=False)
+        inputs = tf.pow(inputs, 1./self.p)
+        return inputs
+
             
 # Function to create our EfficientNetB3 model
 def get_model_embed(config, strategy):
@@ -226,8 +243,11 @@ def get_model_embed(config, strategy):
         label = tf.keras.layers.Input(shape = (), name = 'inp2')
         
         if config.model_type == 'effnetv1':
-            x = EFNS[config.EFF_NET](weights = 'noisy-student', include_top = False)(inp)
-            embed = tf.keras.layers.GlobalAveragePooling2D()(x)
+            x = EFNS[config.EFF_NET](weights='noisy-student', include_top=False)(inp)
+            if config.pool == 'avg':
+                embed = tf.keras.layers.GlobalAveragePooling2D()(x)
+            else:
+                embed = GeM()(x)
         elif config.model_type == 'effnetv2':
             # FEATURE_VECTOR = f'{config.EFFNETV2_ROOT}/efficientnet_v2_{config.EFF_NETV2}/feature_vector/2'
             # embed = tfhub.KerasLayer(FEATURE_VECTOR, trainable=True)(inp)
