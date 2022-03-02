@@ -201,7 +201,7 @@ class ModelGA(tf.keras.Model):
 
             
 # Function to create our EfficientNetB3 model
-def get_model_embed():
+def get_model_embed(config):
     if config.head=='arcface':
         head = ArcMarginProduct
     else:
@@ -251,7 +251,7 @@ def get_model_embed():
         
         return model,embed_model
 
-def get_model_1headid():
+def get_model_1headid(config):
     if config.head=='arcface':
         head = ArcMarginProduct
     else:
@@ -335,7 +335,7 @@ def customAccuracy_species(y_true, y_pred):
     matches = tf.cast(tf.equal(y_true_class, y_pred_class), 'int32')
     return tf.cast(tf.math.reduce_sum(matches), dtype=tf.float32) / tf.cast(tf.maximum(tf.math.reduce_sum(y_pred_class), 1), dtype=tf.float32)
 
-def get_model_1headspecies():
+def get_model_1headspecies(config):
     if config.head=='arcface':
         head = ArcMarginProduct
     else:
@@ -398,7 +398,7 @@ def customLoss(y_true, y_pred):
     return tf.reduce_sum(-tf.log(y_pred_new + epsilon) * y_true, 1)
     # return tf.keras.losses.SparseCategoricalCrossentropy()(y_true, y_pred_new)
 
-def get_model_2heads():
+def get_model_2heads(config):
     if config.head=='arcface':
         head = ArcMarginProduct
     else:
@@ -470,12 +470,12 @@ def get_model_2heads():
         return model,embed_model
 
 # architecture = "1headid"  #[embed, 1headid, 2heads]
-def get_model():
+def get_model(cfg):
   if config.architecture == "embed":
-    return get_model_embed()
+    return get_model_embed(cfg)
   elif config.architecture == "1headid":
-    return get_model_1headid()
+    return get_model_1headid(cfg)
   elif config.architecture == "1headspecies":
-    return get_model_1headspecies()
+    return get_model_1headspecies(cfg)
   elif config.architecture == "2heads":
-    return get_model_2heads()
+    return get_model_2heads(cfg)
