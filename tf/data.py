@@ -16,6 +16,7 @@ import pickle
 import json
 import tensorflow_hub as tfhub
 from datetime import datetime
+from functools import partial
 
 AUTO = tf.data.experimental.AUTOTUNE
 
@@ -56,7 +57,7 @@ def data_augment(posting_id, image, label_group, matches):
     image = tf.image.random_brightness(image, 0.10)
     return posting_id, image, label_group, matches
 
-def decode_image(image_data, box):
+def decode_image(image_data, box, config):
     # image = tf.image.decode_jpeg(image_data, channels = 3)
     if box is not None and box[0] != -1:
         left, top, right, bottom = box[0], box[1], box[2], box[3]
@@ -68,7 +69,7 @@ def decode_image(image_data, box):
     image = tf.cast(image, tf.float32) / 255.0
     return image
 
-def read_labeled_tfrecord(example):
+def read_labeled_tfrecord(config, example):
     LABELED_TFREC_FORMAT = {
         "image_name": tf.io.FixedLenFeature([], tf.string),
         "image": tf.io.FixedLenFeature([], tf.string),
@@ -81,7 +82,7 @@ def read_labeled_tfrecord(example):
     example = tf.io.parse_single_example(example, LABELED_TFREC_FORMAT)
     posting_id = example['image_name']
     bb = tf.cast(example['detic_box'], tf.int32)
-    image = decode_image(example['image'], bb)
+    image = decode_image(example['image'], bb, config)
     # label_group = tf.one_hot(tf.cast(example['label_group'], tf.int32), depth = N_CLASSES)
     label_group = tf.cast(example['target'], tf.int32)
     # matches = tf.cast(example['species'], tf.int32)
@@ -90,7 +91,7 @@ def read_labeled_tfrecord(example):
     return posting_id, image, label_group, matches
 
 # This function loads TF Records and parse them into tensors
-def load_dataset(filenames, ordered = False):
+def load_dataset(filenames, config, ordered = False):
     
     ignore_order = tf.data.Options()
     if not ordered:
@@ -99,11 +100,11 @@ def load_dataset(filenames, ordered = False):
     dataset = tf.data.TFRecordDataset(filenames, num_parallel_reads = AUTO)
 #     dataset = dataset.cache()
     dataset = dataset.with_options(ignore_order)
-    dataset = dataset.map(read_labeled_tfrecord, num_parallel_calls = AUTO) 
+    dataset = dataset.map(partial(read_labeled_tfrecord, config), num_parallel_calls = AUTO) 
     return dataset
 
-def get_training_dataset(filenames):
-    dataset = load_dataset(filenames, ordered = False)
+def get_training_dataset(filenames, config):
+    dataset = load_dataset(filenames, config, ordered = False)
     dataset = dataset.map(data_augment, num_parallel_calls=AUTO)
     dataset = dataset.map(arcface_format, num_parallel_calls = AUTO)
     dataset = dataset.map(lambda posting_id, image, label_group, matches: (image, label_group))
@@ -114,8 +115,7 @@ def get_training_dataset(filenames):
     return dataset
 
 def get_val_dataset(filenames, config):
-    dataset = load_dataset(filenames, ordered = True)
-    # dataset = dataset.map(data_augment, num_parallel_calls = AUTO)
+    dataset = load_dataset(filenames, config, ordered = True)
     dataset = dataset.map(arcface_format, num_parallel_calls = AUTO)
     dataset = dataset.map(lambda posting_id, image, label_group, matches: (image, label_group))
     dataset = dataset.batch(config.BATCH_SIZE)
@@ -123,7 +123,7 @@ def get_val_dataset(filenames, config):
     return dataset
 
 def get_eval_dataset(filenames, config, get_targets=True):
-    dataset = load_dataset(filenames, ordered = True)
+    dataset = load_dataset(filenames, config, ordered = True)
     dataset = dataset.map(arcface_eval_format, num_parallel_calls = AUTO)
     if not get_targets:
         dataset = dataset.map(lambda image, target: image)
@@ -132,7 +132,7 @@ def get_eval_dataset(filenames, config, get_targets=True):
     return dataset
 
 def get_test_dataset(filenames, config, get_names=True):
-    dataset = load_dataset(filenames, ordered = True)
+    dataset = load_dataset(filenames, config, ordered = True)
     dataset = dataset.map(arcface_inference_format, num_parallel_calls = AUTO)
     if not get_names:
         dataset = dataset.map(lambda image, posting_id: image)
