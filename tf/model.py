@@ -471,11 +471,11 @@ def get_model_2heads(config):
 
 # architecture = "1headid"  #[embed, 1headid, 2heads]
 def get_model(cfg):
-  if config.architecture == "embed":
+  if cfg.architecture == "embed":
     return get_model_embed(cfg)
-  elif config.architecture == "1headid":
+  elif cfg.architecture == "1headid":
     return get_model_1headid(cfg)
-  elif config.architecture == "1headspecies":
+  elif cfg.architecture == "1headspecies":
     return get_model_1headspecies(cfg)
-  elif config.architecture == "2heads":
+  elif cfg.architecture == "2heads":
     return get_model_2heads(cfg)
