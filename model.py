@@ -100,6 +100,7 @@ class ArcMarginProduct(nn.Module):
         self.ls_eps = ls_eps  # label smoothing
         self.weight = Parameter(torch.FloatTensor(out_features, in_features))
         nn.init.xavier_uniform_(self.weight)
+        self.device = device
 
         self.easy_margin = easy_margin
         self.cos_m = math.cos(m)
