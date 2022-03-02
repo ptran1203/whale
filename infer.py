@@ -9,7 +9,12 @@ import augments
 import importlib
 
 def infer(args):
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if args.device == 'tpu':
+        import torch_xla.core.xla_model as xm
+        device = xm.xla_device()
+    else:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     model = torch.load(args.weight, map_location='cpu')['model']
     model = model.to(device)
     model.eval()
@@ -23,7 +28,17 @@ def infer(args):
     print(transform)
 
     dataset = InferDataset(args.source, args.img_size, transform=transform)
+
+    if args.device == 'tpu':
+        import torch_xla.distributed.parallel_loader as pl
+        import torch_xla.distributed.xla_multiprocessing as xmp
+        SERIAL_EXEC = xmp.MpSerialExecutor()
+        dataset = SERIAL_EXEC.run(lambda: dataset)
+
     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size)
+
+    if args.device == 'tpu':
+        loader = pl.MpDeviceLoader(loader, device)
 
     # train_embs = pickle_load(args.train_embs)
 

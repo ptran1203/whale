@@ -65,16 +65,33 @@ def get_embs(args, df, save_to=''):
     aug = importlib.import_module(f'augments.{args.aug}')
     val_transform = aug.val_transform
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    if args.device == 'tpu':
+        import torch_xla.core.xla_model as xm
+        device = xm.xla_device()
+    else:
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = torch.load(args.weight, map_location='cpu')['model']
+
     model = model.to(device)
     model.eval()
 
     os.makedirs(args.output, exist_ok=True)
     transform = val_transform(args.img_size)
     print(transform)
+
+
     dataset = WhaleDataset(df, args.img_dir, args.img_size, transform=transform)
+
+    if args.device == 'tpu':
+        import torch_xla.distributed.parallel_loader as pl
+        import torch_xla.distributed.xla_multiprocessing as xmp
+        SERIAL_EXEC = xmp.MpSerialExecutor()
+        dataset = SERIAL_EXEC.run(lambda: dataset)
+
     loader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size)
+
+    if args.device == 'tpu':
+        loader = pl.MpDeviceLoader(loader, device)
 
     res_dict = {}
     with torch.no_grad():
