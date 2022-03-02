@@ -232,7 +232,7 @@ class Trainer:
         for imgs, labels, _ in train_loader:
             for i in range(len(imgs)):
                 img, label = imgs[i], labels[i]
-                img = img.numpy().transpose(1, 2 ,0)
+                img = img.cpu().numpy().transpose(1, 2 ,0)
                 img = denorm(img)
                 cv2.imwrite(os.path.join(log_example_dir, f"example_{i}.jpg"),img)
             break
