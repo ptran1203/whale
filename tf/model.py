@@ -201,7 +201,7 @@ class ModelGA(tf.keras.Model):
 
             
 # Function to create our EfficientNetB3 model
-def get_model_embed(config):
+def get_model_embed(config, strategy):
     if config.head=='arcface':
         head = ArcMarginProduct
     else:
@@ -251,7 +251,7 @@ def get_model_embed(config):
         
         return model,embed_model
 
-def get_model_1headid(config):
+def get_model_1headid(config, strategy):
     if config.head=='arcface':
         head = ArcMarginProduct
     else:
@@ -335,7 +335,20 @@ def customAccuracy_species(y_true, y_pred):
     matches = tf.cast(tf.equal(y_true_class, y_pred_class), 'int32')
     return tf.cast(tf.math.reduce_sum(matches), dtype=tf.float32) / tf.cast(tf.maximum(tf.math.reduce_sum(y_pred_class), 1), dtype=tf.float32)
 
-def get_model_1headspecies(config):
+
+def customLoss(y_true, y_pred):
+    label = tf.argmax(y_pred, axis=1)
+    
+    label2specie_tf = tf.convert_to_tensor(label2specie, np.int32)
+    label_species = tf.gather(label2specie_tf, tf.cast(label, dtype=tf.int32))
+    
+    y_pred_sp = tf.one_hot(label_species, depth=n_species)
+    y_pred_new = tf.concat([y_pred, y_pred_sp], 1)
+    epsilon = 1e-5
+    return tf.reduce_sum(-tf.log(y_pred_new + epsilon) * y_true, 1)
+    # return tf.keras.losses.SparseCategoricalCrossentropy()(y_true, y_pred_new)
+
+def get_model_1headspecies(config, strategy):
     if config.head=='arcface':
         head = ArcMarginProduct
     else:
@@ -386,19 +399,7 @@ def get_model_1headspecies(config):
         
         return model,embed_model
 
-def customLoss(y_true, y_pred):
-    label = tf.argmax(y_pred, axis=1)
-    
-    label2specie_tf = tf.convert_to_tensor(label2specie, np.int32)
-    label_species = tf.gather(label2specie_tf, tf.cast(label, dtype=tf.int32))
-    
-    y_pred_sp = tf.one_hot(label_species, depth=n_species)
-    y_pred_new = tf.concat([y_pred, y_pred_sp], 1)
-    epsilon = 1e-5
-    return tf.reduce_sum(-tf.log(y_pred_new + epsilon) * y_true, 1)
-    # return tf.keras.losses.SparseCategoricalCrossentropy()(y_true, y_pred_new)
-
-def get_model_2heads(config):
+def get_model_2heads(config, strategy):
     if config.head=='arcface':
         head = ArcMarginProduct
     else:
@@ -470,12 +471,12 @@ def get_model_2heads(config):
         return model,embed_model
 
 # architecture = "1headid"  #[embed, 1headid, 2heads]
-def get_model(cfg):
+def get_model(cfg, strategy):
   if cfg.architecture == "embed":
-    return get_model_embed(cfg)
+    return get_model_embed(cfg, strategy)
   elif cfg.architecture == "1headid":
-    return get_model_1headid(cfg)
+    return get_model_1headid(cfg, strategy)
   elif cfg.architecture == "1headspecies":
-    return get_model_1headspecies(cfg)
+    return get_model_1headspecies(cfg, strategy)
   elif cfg.architecture == "2heads":
-    return get_model_2heads(cfg)
+    return get_model_2heads(cfg, strategy)
