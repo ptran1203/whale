@@ -35,10 +35,10 @@ def data_augment(posting_id, image, label_group, matches):
 
     ### CUTOUT
     if tf.random.uniform([])>0.5:
-      N_CUTOUT = 6
+      N_CUTOUT = 1
       for cutouts in range(N_CUTOUT):
         if tf.random.uniform([])>0.5:
-           DIM = 512
+           DIM = 768
            CUTOUT_LENGTH = DIM//8
            x1 = tf.cast( tf.random.uniform([],0,DIM-CUTOUT_LENGTH),tf.int32)
            x2 = tf.cast( tf.random.uniform([],0,DIM-CUTOUT_LENGTH),tf.int32)
