@@ -177,7 +177,7 @@ class Net(nn.Module):
             )
 
         self.neck.apply(init_weights)
-        print("weight init: DONE")
+        # print("weight init: DONE")
 
         if cfg.head == "arcface":
             self.head = ArcMarginProduct(in_features=self.channel_size, out_features=self.out_feature,

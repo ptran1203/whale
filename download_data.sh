@@ -35,11 +35,11 @@ function download2 {
         unzip -q $1.zip -d $WORK_DIR/$1
     elif [ ! -d $WORK_DIR/$1 ]; then
         # kaggle datasets download -d ptran1203/
-        kaggle datasets download -d ptran1203/$1
+        kaggle datasets download -d $2/$1
         echo "Unzipping data..."
         unzip -q $1.zip -d $WORK_DIR/$1
         rm $1.zip
     fi
 }
 
-download2 $1
+download2 $1 $2
