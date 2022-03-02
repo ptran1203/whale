@@ -9,6 +9,16 @@ from torch.utils.data import Dataset
 from sklearn.preprocessing import LabelEncoder
 from glob import glob
 
+try:
+    import torch_xla
+except:
+    pass
+
+def _slurp_file(path):
+    fstat = torch_xla._XLAC._xla_tffile_stat(path)
+    gcs_file = torch_xla._XLAC._xla_tffile_open(path)
+    return torch_xla._XLAC._xla_tffile_read(gcs_file, 0, fstat['length'])
+
 def random_perspective(im, degrees=30, translate=.1, scale=.1, shear=10, perspective=0.0,
                        border=(0, 0)):
     # torchvision.transforms.RandomAffine(degrees=(-10, 10), translate=(0.1, 0.1), scale=(0.9, 1.1), shear=(-10, 10))
@@ -66,8 +76,14 @@ class WhaleDataset(Dataset):
     def __getitem__(self, index):
         row = self.df.iloc[index]
         img_path, label = row['img_path'], row['label']
-        img = cv2.imread(img_path)[:, :, ::-1]
+        if img_path.startswith('gs://'):
+            bf = _slurp_file(img_path)
+            img = cv2.imdecode(np.frombuffer(bf, dtype=np.int8), flags=1)
+        else:
+            img = cv2.imread(img_path)
         assert img is not None, img_path
+
+        img = img[:,:,::-1]
 
         if self.cv2_aug:
             img = random_perspective(img, degrees=10, translate=0.0, scale=0.2, shear=5, perspective=0.001)

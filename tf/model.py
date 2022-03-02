@@ -236,7 +236,8 @@ def get_model_embed(config, strategy):
             s = 30, 
             m = 0.3, 
             name=f'head/{config.head}', 
-            dtype='float32'
+            dtype='float32',
+            ls_eps=config.ls_eps,
             )
 
         inp = tf.keras.layers.Input(shape = [config.IMAGE_SIZE, config.IMAGE_SIZE, 3], name = 'inp1')
