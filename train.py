@@ -108,7 +108,6 @@ def main(args):
 
     print(f'nlabel={n_classes}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
     model = Net(args.backbone, n_classes, cfg=args, pretrained=True)
-    # print(model)
 
     optimizer = optim.SGD(filter(lambda l: l.requires_grad, model.parameters()), lr=args.init_lr, weight_decay=5e-4, momentum=0.9, nesterov=False)
     # optimizer = optim.Adam(filter(lambda l: l.requires_grad, model.parameters()), lr=args.init_lr, weight_decay=5e-4)
