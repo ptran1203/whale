@@ -186,7 +186,7 @@ class Trainer:
                             # nn.utils.clip_grad_norm_(self.model.parameters(), max_norm=2.0, norm_type=2)
                             if self.tpu:
                                 import torch_xla.core.xla_model as xm
-                                xm.optimizer_step.step(self.optim)
+                                xm.optimizer_step(self.optim)
                             else:
                                 self.optim.step()
                             # self.optim.zero_grad()
