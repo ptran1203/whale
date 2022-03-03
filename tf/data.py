@@ -68,7 +68,7 @@ def decode_image_crop(image_data, box, config):
         image = tf.image.decode_jpeg(image_data, channels = 3)    
 
     img_size = config.IMAGE_SIZE
-    if is_train and config.random_crop:
+    if config.random_crop:
         img_size = int(img_size * 1.15)
     image = tf.image.resize(image, [img_size, img_size])
     image = tf.cast(image, tf.float32) / 255.0
