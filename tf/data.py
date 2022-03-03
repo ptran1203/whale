@@ -33,6 +33,8 @@ def arcface_eval_format(posting_id, image, label_group, matches):
 # Data augmentation function
 def data_augment(config, posting_id, image, label_group, matches):
 
+    if config.random_crop:
+        image = tf.image.random_crop(image, size=(config.IMAGE_SIZE, config.IMAGE_SIZE, 3))
     ### CUTOUT
     if tf.random.uniform([])>0.5:
       N_CUTOUT = 1
@@ -49,8 +51,6 @@ def data_augment(config, posting_id, image, label_group, matches):
 
     image = tf.image.random_flip_left_right(image)
     # image = tf.image.random_flip_up_down(image)
-    if config.random_crop:
-        image = tf.image.random_crop(image, size=(config.IMAGE_SIZE, config.IMAGE_SIZE, 3))
     # image = tf.image.random_jpeg_quality(image, 90, 100)
     image = tf.image.random_hue(image, 0.01)
     image = tf.image.random_saturation(image, 0.70, 1.30)
