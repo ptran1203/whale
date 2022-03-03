@@ -31,14 +31,14 @@ def arcface_eval_format(posting_id, image, label_group, matches):
     return image,label_group
 
 # Data augmentation function
-def data_augment(posting_id, image, label_group, matches):
+def data_augment(config, posting_id, image, label_group, matches):
 
     ### CUTOUT
     if tf.random.uniform([])>0.5:
       N_CUTOUT = 1
       for cutouts in range(N_CUTOUT):
         if tf.random.uniform([])>0.5:
-           DIM = 768
+           DIM = config.IMAGE_SIZE
            CUTOUT_LENGTH = DIM//8
            x1 = tf.cast( tf.random.uniform([],0,DIM-CUTOUT_LENGTH),tf.int32)
            x2 = tf.cast( tf.random.uniform([],0,DIM-CUTOUT_LENGTH),tf.int32)
@@ -49,13 +49,30 @@ def data_augment(posting_id, image, label_group, matches):
 
     image = tf.image.random_flip_left_right(image)
     # image = tf.image.random_flip_up_down(image)
-    # image = tf.image.random_crop(image, size=(config.IMAGE_SIZE, config.IMAGE_SIZE, 3))
-    image = tf.image.random_jpeg_quality(image, 90, 100)
+    if config.random_crop:
+        image = tf.image.random_crop(image, size=(config.IMAGE_SIZE, config.IMAGE_SIZE, 3))
+    # image = tf.image.random_jpeg_quality(image, 90, 100)
     image = tf.image.random_hue(image, 0.01)
     image = tf.image.random_saturation(image, 0.70, 1.30)
     image = tf.image.random_contrast(image, 0.80, 1.20)
     image = tf.image.random_brightness(image, 0.10)
     return posting_id, image, label_group, matches
+
+def decode_image_crop(image_data, box, config):
+    # image = tf.image.decode_jpeg(image_data, channels = 3)
+    if box is not None and box[0] != -1:
+        left, top, right, bottom = box[0], box[1], box[2], box[3]
+        bbs = tf.convert_to_tensor([top, left, bottom - top, right - left])
+        image = tf.io.decode_and_crop_jpeg(image_data, bbs, channels=3)
+    else:
+        image = tf.image.decode_jpeg(image_data, channels = 3)    
+
+    img_size = config.IMAGE_SIZE
+    if is_train and config.random_crop:
+        img_size = int(img_size * 1.15)
+    image = tf.image.resize(image, [img_size, img_size])
+    image = tf.cast(image, tf.float32) / 255.0
+    return image
 
 def decode_image(image_data, box, config):
     # image = tf.image.decode_jpeg(image_data, channels = 3)
@@ -65,7 +82,9 @@ def decode_image(image_data, box, config):
         image = tf.io.decode_and_crop_jpeg(image_data, bbs, channels=3)
     else:
         image = tf.image.decode_jpeg(image_data, channels = 3)    
-    image = tf.image.resize(image, [config.IMAGE_SIZE, config.IMAGE_SIZE])
+
+    img_size = config.IMAGE_SIZE
+    image = tf.image.resize(image, [img_size, img_size])
     image = tf.cast(image, tf.float32) / 255.0
     return image
 
@@ -74,7 +93,7 @@ def read_labeled_tfrecord(config, example):
         "image_name": tf.io.FixedLenFeature([], tf.string),
         "image": tf.io.FixedLenFeature([], tf.string),
         "target": tf.io.FixedLenFeature([], tf.int64),
-        'detic_box': tf.io.FixedLenFeature([4], tf.int64),
+        "detic_box": tf.io.FixedLenFeature([4], tf.int64),
         # "species": tf.io.FixedLenFeature([], tf.int64),
         # "matches": tf.io.FixedLenFeature([], tf.string)
     }
@@ -90,8 +109,24 @@ def read_labeled_tfrecord(config, example):
     matches = 1
     return posting_id, image, label_group, matches
 
+def read_labeled_tfrecord_train(config, example):
+    LABELED_TFREC_FORMAT = {
+        "image_name": tf.io.FixedLenFeature([], tf.string),
+        "image": tf.io.FixedLenFeature([], tf.string),
+        "target": tf.io.FixedLenFeature([], tf.int64),
+        "detic_box": tf.io.FixedLenFeature([4], tf.int64),
+    }
+
+    example = tf.io.parse_single_example(example, LABELED_TFREC_FORMAT)
+    posting_id = example['image_name']
+    bb = tf.cast(example['detic_box'], tf.int32)
+    image = decode_image_crop(example['image'], bb, config)
+    label_group = tf.cast(example['target'], tf.int32)
+    matches = 1
+    return posting_id, image, label_group, matches
+
 # This function loads TF Records and parse them into tensors
-def load_dataset(filenames, config, ordered = False):
+def load_dataset(filenames, config, ordered=False, is_train=False):
     
     ignore_order = tf.data.Options()
     if not ordered:
@@ -100,12 +135,15 @@ def load_dataset(filenames, config, ordered = False):
     dataset = tf.data.TFRecordDataset(filenames, num_parallel_reads = AUTO)
 #     dataset = dataset.cache()
     dataset = dataset.with_options(ignore_order)
-    dataset = dataset.map(partial(read_labeled_tfrecord, config), num_parallel_calls = AUTO) 
+    if is_train:
+        dataset = dataset.map(partial(read_labeled_tfrecord_train, config), num_parallel_calls=AUTO)
+    else:
+        dataset = dataset.map(partial(read_labeled_tfrecord, config), num_parallel_calls = AUTO) 
     return dataset
 
 def get_training_dataset(filenames, config):
-    dataset = load_dataset(filenames, config, ordered = False)
-    dataset = dataset.map(data_augment, num_parallel_calls=AUTO)
+    dataset = load_dataset(filenames, config, ordered=False, is_train=True)
+    dataset = dataset.map(partial(data_augment, config), num_parallel_calls=AUTO)
     dataset = dataset.map(arcface_format, num_parallel_calls = AUTO)
     dataset = dataset.map(lambda posting_id, image, label_group, matches: (image, label_group))
     dataset = dataset.repeat()
