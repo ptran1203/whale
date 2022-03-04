@@ -36,12 +36,12 @@ def data_augment(config, posting_id, image, label_group, matches):
     if config.random_crop:
         image = tf.image.random_crop(image, size=(config.IMAGE_SIZE, config.IMAGE_SIZE, 3))
     ### CUTOUT
-    if tf.random.uniform([])>0.5:
+    if config.CUTOUT and tf.random.uniform([])>0.5:
       N_CUTOUT = 1
       for cutouts in range(N_CUTOUT):
         if tf.random.uniform([])>0.5:
            DIM = config.IMAGE_SIZE
-           CUTOUT_LENGTH = DIM//4
+           CUTOUT_LENGTH = DIM//8
            x1 = tf.cast( tf.random.uniform([],0,DIM-CUTOUT_LENGTH),tf.int32)
            x2 = tf.cast( tf.random.uniform([],0,DIM-CUTOUT_LENGTH),tf.int32)
            filter_ = tf.concat([tf.zeros((x1,CUTOUT_LENGTH)),tf.ones((CUTOUT_LENGTH,CUTOUT_LENGTH)),tf.zeros((DIM-x1-CUTOUT_LENGTH,CUTOUT_LENGTH))],axis=0)
