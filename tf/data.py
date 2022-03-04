@@ -41,7 +41,7 @@ def data_augment(config, posting_id, image, label_group, matches):
       for cutouts in range(N_CUTOUT):
         if tf.random.uniform([])>0.5:
            DIM = config.IMAGE_SIZE
-           CUTOUT_LENGTH = DIM//8
+           CUTOUT_LENGTH = DIM//4
            x1 = tf.cast( tf.random.uniform([],0,DIM-CUTOUT_LENGTH),tf.int32)
            x2 = tf.cast( tf.random.uniform([],0,DIM-CUTOUT_LENGTH),tf.int32)
            filter_ = tf.concat([tf.zeros((x1,CUTOUT_LENGTH)),tf.ones((CUTOUT_LENGTH,CUTOUT_LENGTH)),tf.zeros((DIM-x1-CUTOUT_LENGTH,CUTOUT_LENGTH))],axis=0)
@@ -50,12 +50,11 @@ def data_augment(config, posting_id, image, label_group, matches):
            image = cutout*image
 
     image = tf.image.random_flip_left_right(image)
-    # image = tf.image.random_flip_up_down(image)
     # image = tf.image.random_jpeg_quality(image, 90, 100)
-    image = tf.image.random_hue(image, 0.01)
+    image = tf.image.random_hue(image, 0.1)
     image = tf.image.random_saturation(image, 0.70, 1.30)
     image = tf.image.random_contrast(image, 0.80, 1.20)
-    image = tf.image.random_brightness(image, 0.10)
+    image = tf.image.random_brightness(image, 0.2)
     return posting_id, image, label_group, matches
 
 def decode_image_crop(image_data, box, config):
