@@ -30,6 +30,14 @@ def arcface_inference_format(posting_id, image, label_group, matches):
 def arcface_eval_format(posting_id, image, label_group, matches):
     return image,label_group
 
+def random_rot_shear(img, rot_limit=10, shear_limit=10):
+    rot_d = tf.random.uniform([], -rot_limit, rot_limit)
+    shear_d = tf.random.uniform([], -shear_limit, shear_limit)
+
+    img = tfa.image.rotate(img, deg * np.pi/180)
+    img = tfa.image.shear_x(img, deg * np.pi/180, 0.0)
+    return img
+
 # Data augmentation function
 def data_augment(config, posting_id, image, label_group, matches):
 
@@ -51,6 +59,7 @@ def data_augment(config, posting_id, image, label_group, matches):
 
     image = tf.image.random_flip_left_right(image)
     # image = tf.image.random_jpeg_quality(image, 90, 100)
+    image = random_rot_shear(image, rot_limit=10, shear_limit=10)
     image = tf.image.random_hue(image, 0.1)
     image = tf.image.random_saturation(image, 0.70, 1.30)
     image = tf.image.random_contrast(image, 0.80, 1.20)
