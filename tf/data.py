@@ -34,8 +34,8 @@ def random_rot_shear(img, rot_limit=10, shear_limit=10):
     rot_d = tf.random.uniform([], -rot_limit, rot_limit)
     shear_d = tf.random.uniform([], -shear_limit, shear_limit)
 
-    img = tfa.image.rotate(img, deg * np.pi/180)
-    img = tfa.image.shear_x(img, deg * np.pi/180, 0.0)
+    img = tfa.image.rotate(img, rot_d * np.pi/180)
+    img = tfa.image.shear_x(img, shear_d * np.pi/180, 0.0)
     return img
 
 # Data augmentation function
