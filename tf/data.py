@@ -61,7 +61,7 @@ def data_augment(config, posting_id, image, label_group, matches):
 
     image = tf.image.random_flip_left_right(image)
     # image = tf.image.random_jpeg_quality(image, 90, 100)
-    # image = random_rot_shear(image, rot_limit=10, shear_limit=10,)
+    image = random_rot_shear(image, rot_limit=10, shear_limit=10,)
     image = tf.image.random_hue(image, 0.01)
     image = tf.image.random_saturation(image, 0.70, 1.30)
     image = tf.image.random_contrast(image, 0.80, 1.20)
@@ -70,16 +70,12 @@ def data_augment(config, posting_id, image, label_group, matches):
 
 def decode_image_crop(image_data, box, config):
     # image = tf.image.decode_jpeg(image_data, channels = 3)
-    if False:#box is not None and box[0] != -1:
+    if box is not None and box[0] != -1:
         left, top, right, bottom = box[0], box[1], box[2], box[3]
         bbs = tf.convert_to_tensor([top, left, bottom - top, right - left])
         image = tf.io.decode_and_crop_jpeg(image_data, bbs, channels=3)
     else:
         image = tf.image.decode_jpeg(image_data, channels = 3)
-        h, w, _ = image.shape
-        print(image.shape, h, w)
-        if box is not None and box[0] != -1 and w / h < 3.0:
-            image = tf.image.crop_to_bounding_box(image, left, top, right - left, bottom - top)
 
     img_size = config.IMAGE_SIZE
     if config.random_crop:
