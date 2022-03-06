@@ -77,6 +77,7 @@ def decode_image_crop(image_data, box, config):
     else:
         image = tf.image.decode_jpeg(image_data, channels = 3)
         h, w, _ = image.shape
+        print(image.shape, h, w)
         if box is not None and box[0] != -1 and w / h < 3.0:
             image = tf.image.crop_to_bounding_box(image, left, top, right - left, bottom - top)
 
