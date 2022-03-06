@@ -34,9 +34,9 @@ def random_rot_shear(img, rot_limit=10, shear_limit=10):
     rot_d = tf.random.uniform([], -rot_limit, rot_limit)
     shear_d = tf.random.uniform([], -shear_limit, shear_limit)
 
-    if tf.random.uniform([]) <= 0.3:
+    if tf.random.uniform([]) <= 0.2:
         img = tfa.image.rotate(img, rot_d * np.pi/180)
-    if tf.random.uniform([]) <= 0.3:
+    if tf.random.uniform([]) <= 0.2:
         img = tfa.image.shear_x(img, shear_d * np.pi/180, 0.0)
     return img
 
@@ -61,7 +61,7 @@ def data_augment(config, posting_id, image, label_group, matches):
 
     image = tf.image.random_flip_left_right(image)
     # image = tf.image.random_jpeg_quality(image, 90, 100)
-    # image = random_rot_shear(image, rot_limit=10, shear_limit=10,)
+    image = random_rot_shear(image, rot_limit=10, shear_limit=10,)
     image = tf.image.random_hue(image, 0.01)
     image = tf.image.random_saturation(image, 0.70, 1.30)
     image = tf.image.random_contrast(image, 0.80, 1.20)
