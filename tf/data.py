@@ -47,7 +47,7 @@ def data_augment(config, posting_id, image, label_group, matches):
         image = tf.image.random_crop(image, size=(config.IMAGE_SIZE, config.IMAGE_SIZE, 3))
     ### CUTOUT
     if config.CUTOUT and tf.random.uniform([])>0.5:
-      N_CUTOUT = 4
+      N_CUTOUT = 1
       for cutouts in range(N_CUTOUT):
         if tf.random.uniform([])>0.5:
            DIM = config.IMAGE_SIZE
