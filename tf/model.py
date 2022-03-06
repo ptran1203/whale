@@ -257,7 +257,7 @@ def get_model_embed(config, strategy):
             
         embed = tf.keras.layers.Dropout(0.5)(embed)
         embed = tf.keras.layers.Dense(512)(embed)
-        embed = tf.keras.layers.BatchNormalization()(embed)
+        #embed = tf.keras.layers.BatchNormalization()(embed)
         x = margin([embed, label])
         
         output = tf.keras.layers.Softmax(dtype='float32')(x)
