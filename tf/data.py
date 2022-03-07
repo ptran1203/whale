@@ -43,7 +43,7 @@ def random_rot_shear(img, rot_limit=10, shear_limit=10):
 def gaussain_noise(image, p=0.1):
     if tf.random.uniform([]) <= p:
         noise = tf.random.normal(tf.shape(image), mean=0.0, stddev=0.1, dtype=tf.float32)
-        return iamge + noise
+        return image + noise
     return image
 
 # Data augmentation function
