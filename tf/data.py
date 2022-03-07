@@ -40,7 +40,7 @@ def random_rot_shear(img, rot_limit=10, shear_limit=10):
         img = tfa.image.shear_x(img, shear_d * np.pi/180, 0.0)
     return img
 
-def random_blur(img, p=0.3, size=3, mean=0.0, std=0.01):
+def random_blur(img, p=0.3, size=3, mean=0.0, std=0.1):
     """Makes 2D gaussian Kernel for convolution."""
     if tf.random.uniform([]) <= p:
         d = tf.distributions.Normal(mean, std)
