@@ -65,7 +65,7 @@ def data_augment(config, posting_id, image, label_group, matches):
     image = tf.image.random_hue(image, 0.01)
     image = tf.image.random_saturation(image, 0.70, 1.30)
     image = tf.image.random_contrast(image, 0.80, 1.20)
-    image = tf.image.random_brightness(image, 0.2)
+    image = tf.image.random_brightness(image, 0.1)
     return posting_id, image, label_group, matches
 
 def decode_image_crop(image_data, box, config):
