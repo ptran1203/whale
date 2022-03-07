@@ -31,7 +31,7 @@ def map_per_set(labels, predictions):
     return np.mean([map_per_image(l, p) for l,p in zip(labels, predictions)])
 
 
-def compute_sim(train_df, train_embs, test_embs, thr=0.65):
+def compute_sim(train_df, train_embs, test_embs, thr=0.65, norm=False):
     # Compute center of each individual id
     label2emb = defaultdict(list)
     for label, d in train_df.groupby('individual_id'):
@@ -45,6 +45,10 @@ def compute_sim(train_df, train_embs, test_embs, thr=0.65):
 
     train_k, train_v = dict2list(label2emb)
     test_k, test_v = dict2list(test_embs)
+
+    if norm:
+        train_v = l2norm_numpy(train_v)
+        test_v = l2norm_numpy(test_v)
 
     cos = np.matmul(test_v, train_v.T)
 
@@ -95,8 +99,8 @@ def compute_sim2(train_df, train_embs, test_embs):
     sim_df = pd.DataFrame(records, columns=['image', 'predictions'])
     return sim_df
 
-def evaluate(val_df, train_embs, val_embs, func=compute_sim):
-    sim_df = func(val_df, train_embs, val_embs, thr=1.0)
+def evaluate(val_df, train_embs, val_embs, norm=False):
+    sim_df = compute_sim(val_df, train_embs, val_embs, thr=1.0, norm=norm)
 
     label_map = dict(zip(val_df.image, val_df.individual_id))
     

@@ -40,6 +40,12 @@ def random_rot_shear(img, rot_limit=10, shear_limit=10):
         img = tfa.image.shear_x(img, shear_d * np.pi/180, 0.0)
     return img
 
+def gaussain_noise(image, p=0.1):
+    if tf.random.uniform([]) <= p:
+        noise = tf.random.normal(tf.shape(image), mean=0.0, stddev=0.1, dtype=tf.float32)
+        return iamge + noise
+    return image
+
 # Data augmentation function
 def data_augment(config, posting_id, image, label_group, matches):
 
@@ -60,7 +66,9 @@ def data_augment(config, posting_id, image, label_group, matches):
            image = cutout*image
 
     image = tf.image.random_flip_left_right(image)
-    # image = tf.image.random_jpeg_quality(image, 90, 100)
+    if tf.random.uniform([]) <= 0.5:
+        image = tf.image.random_jpeg_quality(image, 80, 100)
+
     # image = random_rot_shear(image, rot_limit=10, shear_limit=10,)
     image = tf.image.random_hue(image, 0.1)
     image = tf.image.random_saturation(image, 0.70, 1.30)
@@ -68,6 +76,7 @@ def data_augment(config, posting_id, image, label_group, matches):
     image = tf.image.random_brightness(image, 0.2)
     if tf.random.uniform([]) <= 0.3:
         image = tfa.image.gaussian_filter2d(image)
+    image = gaussain_noise(image, p=0.1)
     return posting_id, image, label_group, matches
 
 def decode_image_crop(image_data, box, config):
