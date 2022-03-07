@@ -40,22 +40,6 @@ def random_rot_shear(img, rot_limit=10, shear_limit=10):
         img = tfa.image.shear_x(img, shear_d * np.pi/180, 0.0)
     return img
 
-def random_blur(img, p=0.3, size=3, mean=0.0, std=0.1):
-    """Makes 2D gaussian Kernel for convolution."""
-    if tf.random.uniform([]) <= p:
-        d = tf.distributions.Normal(mean, std)
-        vals = d.prob(tf.range(start = -size, limit = size + 1, dtype = tf.float32))
-        gauss_kernel = tf.einsum('i,j->ij',
-                                    vals,
-                                    vals)
-
-        kernel = gauss_kernel / tf.reduce_sum(gauss_kernel)
-        kernel = kernel[:, :, tf.newaxis, tf.newaxis]
-        return tf.nn.conv2d(img, kernel, strides=[1, 1, 1, 1], padding="SAME")
-    else:
-        return img
-
-
 # Data augmentation function
 def data_augment(config, posting_id, image, label_group, matches):
 
@@ -82,7 +66,8 @@ def data_augment(config, posting_id, image, label_group, matches):
     image = tf.image.random_saturation(image, 0.70, 1.30)
     image = tf.image.random_contrast(image, 0.80, 1.20)
     image = tf.image.random_brightness(image, 0.1)
-    image = random_blur(image)
+    if tf.random.uniform([]) <= 0.3:
+        image = tfa.image.gaussian_filter2d(image)
     return posting_id, image, label_group, matches
 
 def decode_image_crop(image_data, box, config):
