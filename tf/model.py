@@ -11,6 +11,7 @@ from sklearn.model_selection import KFold, train_test_split
 from tensorflow.keras import backend as K
 import json
 import tensorflow_hub as tfhub
+import tensorflow_addons as tfa
 from datetime import datetime
 
 n_species = 26
@@ -234,7 +235,7 @@ def get_model_embed(config, strategy):
         margin = head(
             n_classes = config.N_CLASSES, 
             s = 30, 
-            m = 0.5, 
+            m = 0.3, 
             name=f'head/{config.head}', 
             dtype='float32',
             ls_eps=config.ls_eps,
@@ -255,7 +256,7 @@ def get_model_embed(config, strategy):
             hub_url, image_size = get_hub_url_and_isize(config.EFF_NETV2, '21k-ft1k', 'feature-vector')
             embed = tfhub.KerasLayer(hub_url, trainable=True)(inp)
             
-        embed = tf.keras.layers.Dropout(0.5)(embed)
+        embed = tf.keras.layers.Dropout(0.3)(embed)
         embed = tf.keras.layers.Dense(512)(embed)
         #embed = tf.keras.layers.BatchNormalization()(embed)
         x = margin([embed, label])
@@ -266,7 +267,8 @@ def get_model_embed(config, strategy):
         # model = ModelGA(n_gradients = config.n_gradients, inputs = [inp, label], outputs = [output])
         embed_model = tf.keras.models.Model(inputs = inp, outputs = embed)  
         
-        opt = tf.keras.optimizers.Adam(learning_rate = config.LR)
+        # opt = tf.keras.optimizers.Adam(learning_rate = config.LR)
+        opt = tfa.optimizers.AdamW(learning_rate=config.LR, weight_decay=1e-4)
         if config.FREEZE_BATCH_NORM:
             freeze_BN(model)
 
