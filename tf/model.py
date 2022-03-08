@@ -257,7 +257,7 @@ def get_model_embed(config, strategy):
             embed = tfhub.KerasLayer(hub_url, trainable=True)(inp)
             
         embed = tf.keras.layers.Dropout(0.3)(embed)
-        embed = tf.keras.layers.Dense(512)(embed)
+        embed = tf.keras.layers.Dense(512, kernel_regularizer=tf.keras.regularizers.l2(1e-4))(embed)
         #embed = tf.keras.layers.BatchNormalization()(embed)
         x = margin([embed, label])
         
