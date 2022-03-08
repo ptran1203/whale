@@ -67,7 +67,7 @@ def data_augment(config, posting_id, image, label_group, matches):
 
     image = tf.image.random_flip_left_right(image)
     if tf.random.uniform([]) <= 0.5:
-        image = tf.image.random_jpeg_quality(image, 80, 100)
+        image = tf.image.random_jpeg_quality(image, 98, 100)
 
     # image = random_rot_shear(image, rot_limit=10, shear_limit=10,)
     image = tf.image.random_hue(image, 0.1)
@@ -76,7 +76,7 @@ def data_augment(config, posting_id, image, label_group, matches):
     image = tf.image.random_brightness(image, 0.2)
     if tf.random.uniform([]) <= 0.3:
         image = tfa.image.gaussian_filter2d(image)
-    image = gaussain_noise(image, p=0.1)
+    # image = gaussain_noise(image, p=0.1)
     return posting_id, image, label_group, matches
 
 def decode_image_crop(image_data, box, config):

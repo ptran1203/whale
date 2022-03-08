@@ -129,7 +129,7 @@ class Trainer:
         else:
             self.device = torch.device(("cuda" if torch.cuda.is_available() else "cpu"))
 
-        print("device", self.device)
+        print("device", self.device, type(self.device))
         self.triplet_loss = HardTripletLoss()
 
     def init_logger(self, log_dir):
