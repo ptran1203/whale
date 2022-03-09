@@ -23,8 +23,7 @@ import math
 from absl import logging
 import tensorflow.compat.v1 as tf
 from tensorflow_addons import image as image_ops
-import hparams
-
+from tf import hparams
 # pylint: disable=g-long-lambda
 # This signifies the max integer that the controller RNN could predict for the
 # augmentation scheme.
