@@ -267,8 +267,8 @@ def get_model_embed(config, strategy):
         # model = ModelGA(n_gradients = config.n_gradients, inputs = [inp, label], outputs = [output])
         embed_model = tf.keras.models.Model(inputs = inp, outputs = embed)  
         
-        opt = tf.keras.optimizers.Adam(learning_rate = config.LR)
-        # opt = tfa.optimizers.AdamW(learning_rate=config.LR, weight_decay=1e-4)
+        # opt = tf.keras.optimizers.Adam(learning_rate = config.LR)
+        opt = tfa.optimizers.SGDW(learning_rate=config.LR, weight_decay=1e-5, momentum=0.9)
         if config.FREEZE_BATCH_NORM:
             freeze_BN(model)
 
