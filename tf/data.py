@@ -98,7 +98,8 @@ def decode_image_crop(image_data, box, config):
     if config.random_crop:
         img_size = int(img_size * 1.15)
     image = tf.image.resize(image, [img_size, img_size])
-    image = tf.cast(image, tf.float32) / 255.0
+    if config.augname == "normal":
+        image = tf.cast(image, tf.float32) / 255.0
     return image
 
 def decode_image(image_data, box, config):
