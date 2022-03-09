@@ -79,10 +79,9 @@ def data_augment(config, posting_id, image, label_group, matches):
         #     image = tfa.image.gaussian_filter2d(image)
         # image = gaussain_noise(image, p=0.1)
     else:
-        input_image_type = image.dtype
         image = tf.cast(image, dtype=tf.uint8)
         image = distort_image(image, config.augname)
-        image = tf.cast(image, dtype=input_image_type)
+        image = tf.cast(image, dtype=tf.float32) / 255.0
     return posting_id, image, label_group, matches
 
 def decode_image_crop(image_data, box, config):
