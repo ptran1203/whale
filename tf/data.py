@@ -17,6 +17,7 @@ import json
 import tensorflow_hub as tfhub
 from datetime import datetime
 from functools import partial
+from tf.auoaugment import distort_image
 
 AUTO = tf.data.experimental.AUTOTUNE
 
@@ -65,17 +66,20 @@ def data_augment(config, posting_id, image, label_group, matches):
            cutout = tf.reshape(1-filter_,(DIM,DIM,1))
            image = cutout*image
 
-    image = tf.image.random_flip_left_right(image)
-    # image = tf.image.random_jpeg_quality(image, 98, 100)
+    if config.augname == 'normal':
+        image = tf.image.random_flip_left_right(image)
+        # image = tf.image.random_jpeg_quality(image, 98, 100)
 
-    # image = random_rot_shear(image, rot_limit=10, shear_limit=10,)
-    image = tf.image.random_hue(image, 0.03)
-    image = tf.image.random_saturation(image, 0.70, 1.30)
-    image = tf.image.random_contrast(image, 0.80, 1.20)
-    image = tf.image.random_brightness(image, 0.2)
-    # if tf.random.uniform([]) <= 0.3:
-    #     image = tfa.image.gaussian_filter2d(image)
-    # image = gaussain_noise(image, p=0.1)
+        # image = random_rot_shear(image, rot_limit=10, shear_limit=10,)
+        image = tf.image.random_hue(image, 0.03)
+        image = tf.image.random_saturation(image, 0.70, 1.30)
+        image = tf.image.random_contrast(image, 0.80, 1.20)
+        image = tf.image.random_brightness(image, 0.2)
+        # if tf.random.uniform([]) <= 0.3:
+        #     image = tfa.image.gaussian_filter2d(image)
+        # image = gaussain_noise(image, p=0.1)
+    else:
+        image = distort_image(image, config.augname)
     return posting_id, image, label_group, matches
 
 def decode_image_crop(image_data, box, config):
