@@ -261,9 +261,8 @@ def get_model_embed(config, strategy):
                 hub_url, image_size = get_hub_url_and_isize(config.EFF_NETV2, '21k-ft1k', 'feature-vector')
                 embed = tfhub.KerasLayer(hub_url, trainable=True)(inp)
             
-        embed = tf.keras.layers.Dropout(0.3)(embed)
-        # kernel_regularizer=tf.keras.regularizers.l2(1e-4)
-        embed = tf.keras.layers.Dense(512)(embed)
+        embed = tf.keras.layers.Dropout(0.5)(embed)
+        embed = tf.keras.layers.Dense(512, kernel_regularizer=tf.keras.regularizers.l2(5e-4))(embed)
         #embed = tf.keras.layers.BatchNormalization()(embed)
         x = margin([embed, label])
         

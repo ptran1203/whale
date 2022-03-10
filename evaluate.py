@@ -55,8 +55,6 @@ def compute_sim(train_df, train_embs, test_embs, thr=0.65, norm=False):
     records = []
 
     for i, scores in enumerate(tqdm(cos)):
-        # if test_k[i] not in ["7d0f46dd5f4108.jpg", "7a785b700b0339.jpg", "50df0a954eb94c.jpg", "2e773c92752df2.jpg", "3c52966f74d2ad.jpp"]:
-        #     continue
         sort_idx = np.argsort(scores)[::-1]
         top5 = [train_k[j] for j in sort_idx[:5]]
         # top5 = [train_map[x] for x in top5]
