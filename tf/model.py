@@ -244,17 +244,22 @@ def get_model_embed(config, strategy):
         inp = tf.keras.layers.Input(shape = [config.IMAGE_SIZE, config.IMAGE_SIZE, 3], name = 'inp1')
         label = tf.keras.layers.Input(shape = (), name = 'inp2')
         
-        if config.model_type == 'effnetv1':
-            x = EFNS[config.EFF_NET](weights='noisy-student', include_top=False)(inp)
-            if config.pool == 'avg':
-                embed = tf.keras.layers.GlobalAveragePooling2D()(x)
-            else:
-                embed = GeM()(x)
-        elif config.model_type == 'effnetv2':
-            # FEATURE_VECTOR = f'{config.EFFNETV2_ROOT}/efficientnet_v2_{config.EFF_NETV2}/feature_vector/2'
-            # embed = tfhub.KerasLayer(FEATURE_VECTOR, trainable=True)(inp)
-            hub_url, image_size = get_hub_url_and_isize(config.EFF_NETV2, '21k-ft1k', 'feature-vector')
-            embed = tfhub.KerasLayer(hub_url, trainable=True)(inp)
+        if config.model_type.startswith('densenet'):
+            x = tf.keras.applications.densenet.DenseNet121(weights='imagenet', include_top=False)(
+                tf.keras.applications.densenet.preprocess_input(inp)
+            )
+        else:
+            if config.model_type == 'effnetv1':
+                x = EFNS[config.EFF_NET](weights='noisy-student', include_top=False)(inp)
+                if config.pool == 'avg':
+                    embed = tf.keras.layers.GlobalAveragePooling2D()(x)
+                else:
+                    embed = GeM()(x)
+            elif config.model_type == 'effnetv2':
+                # FEATURE_VECTOR = f'{config.EFFNETV2_ROOT}/efficientnet_v2_{config.EFF_NETV2}/feature_vector/2'
+                # embed = tfhub.KerasLayer(FEATURE_VECTOR, trainable=True)(inp)
+                hub_url, image_size = get_hub_url_and_isize(config.EFF_NETV2, '21k-ft1k', 'feature-vector')
+                embed = tfhub.KerasLayer(hub_url, trainable=True)(inp)
             
         embed = tf.keras.layers.Dropout(0.3)(embed)
         # kernel_regularizer=tf.keras.regularizers.l2(1e-4)
