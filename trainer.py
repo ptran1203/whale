@@ -280,7 +280,7 @@ class Trainer:
         start = time.time()
         self.model.to(self.device)
         # self.scheduler.to(self.device)
-        # self.optim.to(self.device)
+        self.optim.to(self.device)
 
         for epoch in range(start_epoch, epochs):
             train_scores = self.run_epoch(train_loader, epoch=epoch)
