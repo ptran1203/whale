@@ -262,7 +262,7 @@ def get_model_embed(config, strategy):
                 embed = tfhub.KerasLayer(hub_url, trainable=True)(inp)
             
         embed = tf.keras.layers.Dropout(0.5)(embed)
-        embed = tf.keras.layers.Dense(512, kernel_regularizer=tf.keras.regularizers.l2(5e-4))(embed)
+        embed = tf.keras.layers.Dense(512, kernel_regularizer=tf.keras.regularizers.l2(1e-4))(embed)
         x = margin([embed, label])
         
         output = tf.keras.layers.Softmax(dtype='float32')(x)
