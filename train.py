@@ -41,6 +41,7 @@ def parseargs():
     parser.add_argument("--freeze_bn", action="store_true")
     parser.add_argument("--m", type=float, default=0.3)
     parser.add_argument("--cv_aug", action="store_true")
+    parser.add_argument("--workers", type=int, default=2)
     parser.add_argument("--ohem", action="store_true")
     parser.add_argument("--warmup_epochs", default=1, type=int)
     parser.add_argument("--mixup", type=float, default=0.0)
@@ -103,7 +104,7 @@ def main(args):
     print("Train aug", dataset.transform)
 
     train_loader = DataLoader(dataset, batch_size=args.batch_size,
-        pin_memory=True, num_workers=2, shuffle=True, drop_last =True)
+        pin_memory=True, num_workers=args.workers, shuffle=True, drop_last =True)
     val_loader = DataLoader(val_data, batch_size=args.batch_size, num_workers=0, shuffle=False)
 
     print(f'nlabel={n_classes}, train={train_df.label.nunique()}, test={val_df.label.nunique()}')
