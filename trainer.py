@@ -266,10 +266,10 @@ class Trainer:
         if cfg.resume:
             if os.path.exists(last_ckp):
                 ckp = torch.load(last_ckp, map_location=self.device)
-                load_my_state_dict(self.model, ckp['model'].state_dict())
-                start_epoch = ckp['epoch'] + 1
                 self.optim.load_state_dict(ckp['optim'])
                 self.scheduler.load_state_dict(ckp['scheduler'])
+                load_my_state_dict(self.model, ckp['model'].state_dict())
+                start_epoch = ckp['epoch'] + 1
                 self.logger.info(f"Resume training from epoch {start_epoch}")
                 print(f"Resume training from epoch {start_epoch}")
             else:
