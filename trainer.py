@@ -265,9 +265,9 @@ class Trainer:
         last_ckp = os.path.join(weight_dir, f'{self.model_name}_last.pth')
         if cfg.resume:
             if os.path.exists(last_ckp):
-                ckp = torch.load(last_ckp, map_location=self.device)
-                self.optim.load_state_dict(ckp['optim'])
-                self.scheduler.load_state_dict(ckp['scheduler'])
+                ckp = torch.load(last_ckp, map_location='cpu')
+                # self.optim.load_state_dict(ckp['optim'])
+                # self.scheduler.load_state_dict(ckp['scheduler'])
                 load_my_state_dict(self.model, ckp['model'].state_dict())
                 start_epoch = ckp['epoch'] + 1
                 self.logger.info(f"Resume training from epoch {start_epoch}")
@@ -279,8 +279,6 @@ class Trainer:
         # Train
         start = time.time()
         self.model.to(self.device)
-        # self.scheduler.to(self.device)
-        # self.optim.to(self.device)
 
         for epoch in range(start_epoch, epochs):
             train_scores = self.run_epoch(train_loader, epoch=epoch)
