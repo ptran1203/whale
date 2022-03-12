@@ -90,9 +90,10 @@ def decode_image(image_data, box, config):
     expand_ratio = tf.cast(0.1, tf.float32)
     if box is not None and box[0] != -1:
         left, top, right, bottom = box[0], box[1], box[2], box[3]
-        width, height = tf.cast(right - left, tf.float32), tf.cast(bottom - top, tf.float32)
-        h_offset, w_offet = tf.cast(height * expand_ratio, tf.int32), tf.cast(width * expand_ratio, tf.int32)
-        left, top, right, bottom = left - w_offet, top - h_offset, right + w_offet, bottom + h_offset
+        # width, height = tf.cast(right - left, tf.float32), tf.cast(bottom - top, tf.float32)
+        # h_offset, w_offet = tf.cast(height * expand_ratio, tf.int32), tf.cast(width * expand_ratio, tf.int32)
+        # left, top = left - w_offet, top - h_offset
+        # right, bottom = right + w_offet, bottom + h_offset
         bbs = tf.convert_to_tensor([top, left, bottom - top, right - left])
         image = tf.io.decode_and_crop_jpeg(image_data, bbs, channels=3)
     else:
