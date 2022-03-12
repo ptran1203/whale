@@ -87,11 +87,11 @@ def data_augment(config, posting_id, image, label_group, matches):
 
 def decode_image(image_data, box, config):
     # image = tf.image.decode_jpeg(image_data, channels = 3)
-    expand_ratio = 0.1
+    expand_ratio = tf.cast(0.1, tf.float32)
     if box is not None and box[0] != -1:
         left, top, right, bottom = box[0], box[1], box[2], box[3]
-        width, height = right - left, bottom - top
-        h_offset, w_offet = int(height * expand_ratio), int(width * expand_ratio)
+        width, height = tf.cast(right - left, tf.float32), tf.cast(bottom - top, tf.float32)
+        h_offset, w_offet = tf.cast(height * expand_ratio, tf.int32), tf.cast(width * expand_ratio, tf.int32)
         left, top, right, bottom = left - w_offet, top - h_offset, right + w_offet, bottom + h_offset
         bbs = tf.convert_to_tensor([top, left, bottom - top, right - left])
         image = tf.io.decode_and_crop_jpeg(image_data, bbs, channels=3)
