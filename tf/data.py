@@ -85,27 +85,14 @@ def data_augment(config, posting_id, image, label_group, matches):
         image = tf.cast(image, dtype=tf.float32) / 255.0
     return posting_id, image, label_group, matches
 
-def decode_image_crop(image_data, box, config):
-    # image = tf.image.decode_jpeg(image_data, channels = 3)
-    if box is not None and box[0] != -1:
-        left, top, right, bottom = box[0], box[1], box[2], box[3]
-        bbs = tf.convert_to_tensor([top, left, bottom - top, right - left])
-        image = tf.io.decode_and_crop_jpeg(image_data, bbs, channels=3)
-    else:
-        image = tf.image.decode_jpeg(image_data, channels = 3)
-
-    img_size = config.IMAGE_SIZE
-    if config.random_crop:
-        img_size = int(img_size * 1.15)
-    image = tf.image.resize(image, [img_size, img_size])
-    if config.augname == "normal":
-        image = tf.cast(image, tf.float32) / 255.0
-    return image
-
 def decode_image(image_data, box, config):
     # image = tf.image.decode_jpeg(image_data, channels = 3)
+    expand_ratio = 0.1
     if box is not None and box[0] != -1:
         left, top, right, bottom = box[0], box[1], box[2], box[3]
+        width, height = right - left, bottom - top
+        h_offset, w_offet = int(height * expand_ratio), int(width * expand_ratio)
+        left, top, right, bottom = left - w_offet, top - h_offset, right + w_offet, bottom + h_offset
         bbs = tf.convert_to_tensor([top, left, bottom - top, right - left])
         image = tf.io.decode_and_crop_jpeg(image_data, bbs, channels=3)
     else:
@@ -137,22 +124,6 @@ def read_labeled_tfrecord(config, example):
     matches = 1
     return posting_id, image, label_group, matches
 
-def read_labeled_tfrecord_train(config, example):
-    LABELED_TFREC_FORMAT = {
-        "image_name": tf.io.FixedLenFeature([], tf.string),
-        "image": tf.io.FixedLenFeature([], tf.string),
-        "target": tf.io.FixedLenFeature([], tf.int64),
-        "detic_box": tf.io.FixedLenFeature([4], tf.int64),
-    }
-
-    example = tf.io.parse_single_example(example, LABELED_TFREC_FORMAT)
-    posting_id = example['image_name']
-    bb = tf.cast(example['detic_box'], tf.int32)
-    image = decode_image_crop(example['image'], bb, config)
-    label_group = tf.cast(example['target'], tf.int32)
-    matches = 1
-    return posting_id, image, label_group, matches
-
 # This function loads TF Records and parse them into tensors
 def load_dataset(filenames, config, ordered=False, is_train=False):
     
@@ -163,10 +134,7 @@ def load_dataset(filenames, config, ordered=False, is_train=False):
     dataset = tf.data.TFRecordDataset(filenames, num_parallel_reads = AUTO)
 #     dataset = dataset.cache()
     dataset = dataset.with_options(ignore_order)
-    if is_train:
-        dataset = dataset.map(partial(read_labeled_tfrecord_train, config), num_parallel_calls=AUTO)
-    else:
-        dataset = dataset.map(partial(read_labeled_tfrecord, config), num_parallel_calls = AUTO) 
+    dataset = dataset.map(partial(read_labeled_tfrecord, config), num_parallel_calls = AUTO) 
     return dataset
 
 def get_training_dataset(filenames, config):
