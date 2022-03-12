@@ -234,7 +234,7 @@ def get_model_embed(config, strategy):
         
         margin = head(
             n_classes = config.N_CLASSES, 
-            s = 64, 
+            s = 20, 
             m = config.margin, 
             name=f'head/{config.head}', 
             dtype='float32',
