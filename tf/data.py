@@ -75,9 +75,9 @@ def data_augment(config, posting_id, image, label_group, matches):
         image = tf.image.random_saturation(image, 0.70, 1.30)
         image = tf.image.random_contrast(image, 0.80, 1.20)
         image = tf.image.random_brightness(image, 0.2)
-        # if tf.random.uniform([]) <= 0.3:
-        #     image = tfa.image.gaussian_filter2d(image)
-        # image = gaussain_noise(image, p=0.1)
+        if tf.random.uniform([]) <= 0.3:
+            image = tfa.image.gaussian_filter2d(image)
+        image = gaussain_noise(image, p=0.1)
     else:
         image = tf.clip_by_value(image, 0.0, 255.0)
         image = tf.cast(image, dtype=tf.uint8)
