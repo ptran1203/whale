@@ -244,10 +244,11 @@ def get_model_embed(config, strategy):
         inp = tf.keras.layers.Input(shape = [config.IMAGE_SIZE, config.IMAGE_SIZE, 3], name = 'inp1')
         label = tf.keras.layers.Input(shape = (), name = 'inp2')
         
-        if config.model_type.startswith('densenet'):
-            x = tf.keras.applications.densenet.DenseNet121(weights='imagenet', include_top=False)(
-                tf.keras.applications.densenet.preprocess_input(inp)
-            )
+        print(config.model_type)
+        if not config.model_type.startswith('effnet'):
+            import tfimm
+            
+            x = tfimm.create_model(config.model_type, pretrained="timm")(inp)
         else:
             if config.model_type == 'effnetv1':
                 x = EFNS[config.EFF_NET](weights='noisy-student', include_top=False)(inp)
