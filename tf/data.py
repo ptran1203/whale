@@ -86,7 +86,7 @@ def data_augment(config, posting_id, image, label_group, matches):
 
 def decode_image(image_data, box, config):
     # image = tf.image.decode_jpeg(image_data, channels = 3)
-    expand_ratio = tf.cast(0.1, tf.float32)
+    # expand_ratio = tf.cast(0.1, tf.float32)
     if box is not None and box[0] != -1:
         left, top, right, bottom = box[0], box[1], box[2], box[3]
         # width, height = tf.cast(right - left, tf.float32), tf.cast(bottom - top, tf.float32)
