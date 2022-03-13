@@ -71,7 +71,11 @@ class WhaleDataset(Dataset):
         self.transform = transform
         self.img_size = img_size
         self.cv2_aug = cv2_aug
-        self.df['img_path'] = self.df['image'].apply(lambda x: os.path.join(img_dir, x))
+        if 'seg_img' in img_dir:
+            # PNG
+            self.df['img_path'] = self.df['image'].apply(lambda x: os.path.join(img_dir, x.replace('.jpg', '.png')))
+        else:
+            self.df['img_path'] = self.df['image'].apply(lambda x: os.path.join(img_dir, x))
 
     def __getitem__(self, index):
         row = self.df.iloc[index]
