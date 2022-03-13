@@ -48,11 +48,12 @@ def gaussain_noise(image, p=0.1):
 
 # Data augmentation function
 def data_augment(config, posting_id, image, label_group, matches):
-
+    
     if config.random_crop:
         image = tf.image.random_crop(image, size=(config.IMAGE_SIZE, config.IMAGE_SIZE, 3))
 
     if config.augname == 'normal':
+        image = tf.cast(image, tf.float32) / 255.0
         if config.CUTOUT and tf.random.uniform([])>0.5:
             N_CUTOUT = 4
             for cutouts in range(N_CUTOUT):
@@ -64,8 +65,7 @@ def data_augment(config, posting_id, image, label_group, matches):
                     filter_ = tf.concat([tf.zeros((x1,CUTOUT_LENGTH)),tf.ones((CUTOUT_LENGTH,CUTOUT_LENGTH)),tf.zeros((DIM-x1-CUTOUT_LENGTH,CUTOUT_LENGTH))],axis=0)
                     filter_ = tf.concat([tf.zeros((DIM,x2)),filter_,tf.zeros((DIM,DIM-x2-CUTOUT_LENGTH))],axis=1)
                     cutout = tf.reshape(1-filter_,(DIM,DIM,1))
-                    image = cutout*image
-
+                    image = cutout*image        
         image = tf.image.random_flip_left_right(image)
         # image = tf.image.random_jpeg_quality(image, 98, 100)
 
@@ -100,7 +100,6 @@ def decode_image(image_data, box, config):
 
     img_size = config.IMAGE_SIZE
     image = tf.image.resize(image, [img_size, img_size])
-    image = tf.cast(image, tf.float32) / 255.0
     return image
 
 def read_labeled_tfrecord(config, example):
