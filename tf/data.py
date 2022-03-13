@@ -53,7 +53,6 @@ def data_augment(config, posting_id, image, label_group, matches):
         image = tf.image.random_crop(image, size=(config.IMAGE_SIZE, config.IMAGE_SIZE, 3))
 
     if config.augname == 'normal':
-        image = tf.cast(image, tf.float32) / 255.0
         if config.CUTOUT and tf.random.uniform([])>0.5:
             N_CUTOUT = 4
             for cutouts in range(N_CUTOUT):
@@ -78,6 +77,7 @@ def data_augment(config, posting_id, image, label_group, matches):
             image = tfa.image.gaussian_filter2d(image)
         image = gaussain_noise(image, p=0.1)
     else:
+        image = image * 255.0
         image = tf.clip_by_value(image, 0.0, 255.0)
         image = tf.cast(image, dtype=tf.uint8)
         image = distort_image(image, config.augname)
@@ -100,6 +100,7 @@ def decode_image(image_data, box, config):
 
     img_size = config.IMAGE_SIZE
     image = tf.image.resize(image, [img_size, img_size])
+    image = tf.cast(image, tf.float32) / 255.0
     return image
 
 def read_labeled_tfrecord(config, example):
