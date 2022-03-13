@@ -248,11 +248,11 @@ def get_model_embed(config, strategy):
         if not config.model_type.startswith('effnet'):
             import tfimm
             
-            x = tfimm.create_model(config.model_type, pretrained="timm")(inp)
-            if config.pool == 'avg':
-                embed = tf.keras.layers.GlobalAveragePooling2D()(x)
-            else:
-                embed = GeM()(x)
+            embed = tfimm.create_model(config.model_type, pretrained="timm")(inp)
+            # if config.pool == 'avg':
+            #     embed = tf.keras.layers.GlobalAveragePooling2D()(x)
+            # else:
+            #     embed = GeM()(x)
         else:
             if config.model_type == 'effnetv1':
                 x = EFNS[config.EFF_NET](weights='noisy-student', include_top=False)(inp)
