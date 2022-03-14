@@ -258,8 +258,12 @@ def get_model_embed(config, strategy):
                 x = EFNS[config.EFF_NET](weights='noisy-student', include_top=False)(inp)
                 if config.pool == 'avg':
                     embed = tf.keras.layers.GlobalAveragePooling2D()(x)
-                else:
+                elif config.pool == 'gem':
                     embed = GeM()(x)
+                elif config.pool == 'concat':
+                   
+                    embed =  tf.concat([GeM()(x), tf.keras.layers.GlobalAveragePooling2D()(x)],axis = 1)
+
             elif config.model_type == 'effnetv2':
                 # FEATURE_VECTOR = f'{config.EFFNETV2_ROOT}/efficientnet_v2_{config.EFF_NETV2}/feature_vector/2'
                 # embed = tfhub.KerasLayer(FEATURE_VECTOR, trainable=True)(inp)
