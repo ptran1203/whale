@@ -68,8 +68,8 @@ def data_augment(config, posting_id, image, label_group, matches):
         image = tf.image.random_flip_left_right(image)
         # image = tf.image.random_jpeg_quality(image, 98, 100)
 
-        image = random_rot_shear(image, rot_limit=20, shear_limit=0,)
-        image = tf.image.random_hue(image, 0.03)
+        # image = random_rot_shear(image, rot_limit=20, shear_limit=0,)
+        image = tf.image.random_hue(image, 0.1)
         image = tf.image.random_saturation(image, 0.70, 1.30)
         image = tf.image.random_contrast(image, 0.80, 1.20)
         image = tf.image.random_brightness(image, 0.2)
