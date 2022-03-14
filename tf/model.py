@@ -233,9 +233,9 @@ def get_model_embed(config, strategy):
     with strategy.scope():
         
         margin = head(
-            n_classes = config.N_CLASSES, 
-            s = 30, 
-            m = config.margin, 
+            n_classes=config.N_CLASSES, 
+            s=30, 
+            m=config.margin, 
             name=f'head/{config.head}', 
             dtype='float32',
             ls_eps=config.ls_eps,
@@ -270,7 +270,7 @@ def get_model_embed(config, strategy):
                 hub_url, image_size = get_hub_url_and_isize(config.EFF_NETV2, '21k-ft1k', 'feature-vector')
                 embed = tfhub.KerasLayer(hub_url, trainable=True)(inp)
             
-        embed = tf.keras.layers.Dropout(0.3)(embed)
+        embed = tf.keras.layers.Dropout(0.5)(embed)
         embed = tf.keras.layers.Dense(512)(embed)
         x = margin([embed, label])
         
