@@ -6,7 +6,6 @@ def train_transform(img_size):
         # A.RandomCrop(img_size, img_size, p=1.0),
         A.HorizontalFlip(p=0.5),
         A.ImageCompression(quality_lower=99, quality_upper=100, p=0.1),
-        A.GaussNoise(p=0.1),
         A.GaussianBlur(blur_limit=3, p=0.1),
         A.RandomBrightnessContrast(p=0.75, brightness_limit=0.1, contrast_limit=0.1),
         A.HueSaturationValue(p=0.75, hue_shift_limit=0.01, sat_shift_limit=0.3, val_shift_limit=0.2),
