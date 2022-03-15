@@ -54,6 +54,21 @@ def focal_loss(gamma=2., alpha=1.0):
         return tf.reduce_mean(reduced_fl)
     return focal_loss_fixed
 
+def focal_loss_softmax(labels, y_pred, gamma=2):
+    """
+    Computer focal loss for multi classification
+    Args:
+      labels: A int32 tensor of shape [batch_size].
+      logits: A float32 tensor of shape [batch_size,num_classes].
+      gamma: A scalar for focal loss gamma hyper-parameter.
+    Returns:
+      A tensor of the same shape as `lables`
+    """
+    labels=tf.one_hot(labels, depth=y_pred.shape[1])
+    L=-labels*((1-y_pred)**gamma)*tf.log(y_pred)
+    L=tf.reduce_sum(L,axis=1)
+    return L
+
 class ArcMarginProduct(tf.keras.layers.Layer):
     '''
     Implements large margin arc distance.
@@ -326,7 +341,7 @@ def get_model_embed(config, strategy):
         if config.loss == 'ce':
             loss_func = tf.keras.losses.SparseCategoricalCrossentropy()
         elif config.loss == 'focal':
-            loss_func = focal_loss(gamma=2.0, alpha=1.0)
+            loss_func = focal_loss_softmax
         else:
             raise ValueError(config.loss)
 
