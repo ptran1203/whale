@@ -104,16 +104,19 @@ def decode_image(image_data, box, config):
     return image
 
 def decode_image_expand(image_data, box, config):
-    # image = tf.image.decode_jpeg(image_data, channels = 3)
-    expand_ratio = tf.cast(0.2, tf.float32)
+    expand_ratio = tf.random.uniform([], 0.0, 0.2)
     if box is not None and box[0] != -1:
         image = tf.image.decode_jpeg(image_data, channels = 3)    
         shape = tf.shape(image)
         left, top, right, bottom = box[0], box[1], box[2], box[3]
         width, height = tf.cast(right - left, tf.float32), tf.cast(bottom - top, tf.float32)
-        h_offset, w_offet = tf.cast(height * expand_ratio, tf.int32), tf.cast(width * expand_ratio, tf.int32)
-        left, top = tf.maximum(left - w_offet, 0), tf.maximum(top - h_offset, 0)
-        right, bottom = tf.minimum(right + w_offet, shape[1]), tf.minimum(bottom + h_offset, shape[0])
+        h_offset, w_offset = height * expand_ratio, width * expand_ratio
+        # Make square
+        if tf.random.uniform([]) <= 0.2:
+            h_offset += (width - height) / 2
+        h_offset, w_offset = tf.cast(h_offset, tf.int32), tf.cast(w_offset, tf.int32)
+        left, top = tf.maximum(left - w_offset, 0), tf.maximum(top - h_offset, 0)
+        right, bottom = tf.minimum(right + w_offset, shape[1]), tf.minimum(bottom + h_offset, shape[0])
         bbs = tf.convert_to_tensor([top, left, bottom - top, right - left])
         #image = tf.io.decode_and_crop_jpeg(image_data, bbs, channels=3)
         image = tf.image.crop_to_bounding_box(image, top, left, bottom - top, right - left)
