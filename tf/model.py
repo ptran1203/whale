@@ -47,7 +47,7 @@ def focal_loss(gamma=2., alpha=1.0):
         y_pred = tf.convert_to_tensor(y_pred, tf.float32)
 
         model_out = tf.add(y_pred, epsilon)
-        ce = tf.multiply(y_true, -tf.log(model_out))
+        ce = tf.multiply(y_true, -tf.math.log(model_out))
         weight = tf.multiply(y_true, tf.pow(tf.subtract(1., model_out), gamma))
         fl = tf.multiply(alpha, tf.multiply(weight, ce))
         reduced_fl = tf.reduce_max(fl, axis=1)
