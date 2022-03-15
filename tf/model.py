@@ -65,7 +65,7 @@ def focal_loss_softmax(labels, y_pred, gamma=2):
       A tensor of the same shape as `lables`
     """
     labels=tf.one_hot(labels, depth=y_pred.shape[1])
-    L=-labels*((1-y_pred)**gamma)*tf.log(y_pred)
+    L=-labels*((1-y_pred)**gamma)*tf.math.log(y_pred)
     L=tf.reduce_sum(L,axis=1)
     return L
 
