@@ -42,6 +42,7 @@ def focal_loss(gamma=2., alpha=1.0):
             [tensor] -- loss.
         """
         epsilon = 1.e-9
+        y_true = tf.one_hot(y_true, depth=y_pred.shape[1])
         y_true = tf.convert_to_tensor(y_true, tf.float32)
         y_pred = tf.convert_to_tensor(y_pred, tf.float32)
 
