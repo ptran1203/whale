@@ -103,8 +103,11 @@ def decode_image(image_data, box, config):
     image = tf.cast(image, tf.float32) / 255.0
     return image
 
-def decode_image_expand(image_data, box, config):
-    expand_ratio = tf.random.uniform([], 0.0, 0.2)
+def decode_image_expand(image_data, box, config, is_train):
+    if is_train:
+        expand_ratio = tf.constant(0.1, dtype=tf.float32)
+    else:
+        expand_ratio = tf.random.uniform([], 0.0, 0.2)
     if box is not None and box[0] != -1:
         image = tf.image.decode_jpeg(image_data, channels = 3)    
         shape = tf.shape(image)
@@ -112,7 +115,7 @@ def decode_image_expand(image_data, box, config):
         width, height = tf.cast(right - left, tf.float32), tf.cast(bottom - top, tf.float32)
         h_offset, w_offset = height * expand_ratio, width * expand_ratio
         # Make square
-        if tf.random.uniform([]) <= 0.2:
+        if is_train and tf.random.uniform([]) <= 0.2:
             h_offset += (width - height) / 2
         h_offset, w_offset = tf.cast(h_offset, tf.int32), tf.cast(w_offset, tf.int32)
         left, top = tf.maximum(left - w_offset, 0), tf.maximum(top - h_offset, 0)
@@ -128,7 +131,7 @@ def decode_image_expand(image_data, box, config):
     image = tf.cast(image, tf.float32) / 255.0
     return image
 
-def read_labeled_tfrecord(config, example):
+def read_labeled_tfrecord(config, is_train, example):
     LABELED_TFREC_FORMAT = {
         "image_name": tf.io.FixedLenFeature([], tf.string),
         "image": tf.io.FixedLenFeature([], tf.string),
@@ -143,7 +146,7 @@ def read_labeled_tfrecord(config, example):
     bb = tf.cast(example['detic_box'], tf.int32)
 
     if config.expand_box:
-        image = decode_image_expand(example['image'], bb, config)
+        image = decode_image_expand(example['image'], bb, config, is_train)
     else:
         image = decode_image(example['image'], bb, config)
     # label_group = tf.one_hot(tf.cast(example['label_group'], tf.int32), depth = N_CLASSES)
@@ -163,7 +166,7 @@ def load_dataset(filenames, config, ordered=False, is_train=False):
     dataset = tf.data.TFRecordDataset(filenames, num_parallel_reads = AUTO)
 #     dataset = dataset.cache()
     dataset = dataset.with_options(ignore_order)
-    dataset = dataset.map(partial(read_labeled_tfrecord, config), num_parallel_calls = AUTO) 
+    dataset = dataset.map(partial(read_labeled_tfrecord, config, is_train), num_parallel_calls = AUTO) 
     return dataset
 
 def get_training_dataset(filenames, config):
