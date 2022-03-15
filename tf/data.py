@@ -65,7 +65,7 @@ def data_augment(config, posting_id, image, label_group, matches):
                     filter_ = tf.concat([tf.zeros((DIM,x2)),filter_,tf.zeros((DIM,DIM-x2-CUTOUT_LENGTH))],axis=1)
                     cutout = tf.reshape(1-filter_,(DIM,DIM,1))
                     image = cutout*image        
-        image = tf.image.random_flip_left_right(image)
+        # image = tf.image.random_flip_left_right(image)
         # image = tf.image.random_jpeg_quality(image, 98, 100)
 
         # image = random_rot_shear(image, rot_limit=20, shear_limit=0,)
