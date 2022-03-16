@@ -12,7 +12,7 @@ from tensorflow.keras import backend as K
 import json
 import tensorflow_hub as tfhub
 import tensorflow_addons as tfa
-from tf.losses import SparseCategoricalFocalLoss
+from tf.losses import SparseCategoricalFocalLoss, categorical_focal_loss
 from datetime import datetime
 
 n_species = 26
