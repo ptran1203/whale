@@ -105,9 +105,9 @@ def decode_image(image_data, box, config):
 
 def decode_image_expand(image_data, box, config, is_train):
     if is_train:
-        expand_ratio = tf.constant(0.1, dtype=tf.float32)
-    else:
         expand_ratio = tf.random.uniform([], 0.0, 0.2)
+    else:
+        expand_ratio = tf.constant(0.1, dtype=tf.float32)
     if box is not None and box[0] != -1:
         image = tf.image.decode_jpeg(image_data, channels = 3)    
         shape = tf.shape(image)
