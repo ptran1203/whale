@@ -145,7 +145,10 @@ def read_labeled_tfrecord(config, is_train, example):
     example = tf.io.parse_single_example(example, LABELED_TFREC_FORMAT)
     posting_id = example['image_name']
 
-    box_type = random.choice(['detic_box', 'yolov5_box', 'backfin_box'])
+    if is_train:
+        box_type = random.choice(['detic_box', 'yolov5_box', 'backfin_box'])
+    else:
+        box_type = 'detic_box'
     bb = tf.cast(example[box_type], tf.int32)
 
     if config.expand_box:
