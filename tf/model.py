@@ -289,7 +289,7 @@ def get_model_embed(config, strategy):
         if config.loss == 'ce':
             loss_func = tf.keras.losses.SparseCategoricalCrossentropy()
         elif config.loss == 'focal':
-            loss_func = SparseCategoricalFocalLoss(gamma=0.5)
+            loss_func = SparseCategoricalFocalLoss(gamma=0.0)
         else:
             raise ValueError(config.loss)
 
