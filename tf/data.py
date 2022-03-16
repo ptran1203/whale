@@ -137,13 +137,16 @@ def read_labeled_tfrecord(config, is_train, example):
         "image": tf.io.FixedLenFeature([], tf.string),
         "target": tf.io.FixedLenFeature([], tf.int64),
         "detic_box": tf.io.FixedLenFeature([4], tf.int64),
-        # "species": tf.io.FixedLenFeature([], tf.int64),
-        # "matches": tf.io.FixedLenFeature([], tf.string)
+        "yolov5_box": tf.io.FixedLenFeature([4], tf.int64),
+        "backfin_box": tf.io.FixedLenFeature([4], tf.int64),
+        "matches": tf.io.FixedLenFeature([], tf.string)
     }
 
     example = tf.io.parse_single_example(example, LABELED_TFREC_FORMAT)
     posting_id = example['image_name']
-    bb = tf.cast(example['detic_box'], tf.int32)
+
+    box_type = random.choice(['detic_box', 'yolov5_box', 'backfin_box'])
+    bb = tf.cast(example[box_type], tf.int32)
 
     if config.expand_box:
         image = decode_image_expand(example['image'], bb, config, is_train)
