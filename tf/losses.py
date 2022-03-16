@@ -2,6 +2,7 @@ import itertools
 from typing import Any, Optional
 
 import tensorflow as tf
+from tensorflow.keras import backend as K
 
 _EPSILON = tf.keras.backend.epsilon()
 
