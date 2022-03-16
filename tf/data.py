@@ -139,7 +139,7 @@ def read_labeled_tfrecord(config, is_train, example):
         "detic_box": tf.io.FixedLenFeature([4], tf.int64),
         "yolov5_box": tf.io.FixedLenFeature([4], tf.int64),
         "backfin_box": tf.io.FixedLenFeature([4], tf.int64),
-        "matches": tf.io.FixedLenFeature([], tf.string)
+        # "matches": tf.io.FixedLenFeature([], tf.string)
     }
 
     example = tf.io.parse_single_example(example, LABELED_TFREC_FORMAT)
