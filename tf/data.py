@@ -120,9 +120,9 @@ def decode_image_expand(image_data, box, config, is_train):
         h_offset, w_offset = tf.cast(h_offset, tf.int32), tf.cast(w_offset, tf.int32)
         left, top = tf.maximum(left - w_offset, 0), tf.maximum(top - h_offset, 0)
         right, bottom = tf.minimum(right + w_offset, shape[1]), tf.minimum(bottom + h_offset, shape[0])
-        bbs = tf.convert_to_tensor([top, left, bottom - top, right - left])
+        # bbs = tf.convert_to_tensor([top, left, bottom - top, right - left])
         #image = tf.io.decode_and_crop_jpeg(image_data, bbs, channels=3)
-        image = tf.image.crop_to_bounding_box(image, top, left, bottom - top, right - left)
+        image = tf.cond(bottom > top, lambda: tf.image.crop_to_bounding_box(image, top, left, bottom - top, right - left), lambda: image)
     else:
         image = tf.image.decode_jpeg(image_data, channels = 3)   
 
