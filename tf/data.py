@@ -147,7 +147,13 @@ def read_labeled_tfrecord(config, is_train, example):
 
     if config.crop_method == 'random':
         if is_train:
-            box_type = random.choice(['detic_box', 'yolov5_box', 'backfin_box'])
+            opt = tf.random.categorical(tf.math.log([[0.5, 0.5, 0.5]]), 1)
+            if opt == 0:
+                box_type = 'detic_box'
+            elif opt == 1:
+                box_type = 'yolov5_box'
+            else:
+                box_type = 'backfin_box'
         else:
             box_type = 'detic_box'
     else:
