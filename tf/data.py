@@ -157,7 +157,7 @@ def read_labeled_tfrecord(config, is_train, example):
         else:
             bb = tf.cast(example['detic_box'], tf.int32)
     else:
-        bb = tf.cast(example['detic_box'], tf.int32)
+        bb = tf.cast(example[config.crop_method], tf.int32)
 
     if config.expand_box:
         image = decode_image_expand(example['image'], bb, config, is_train)
