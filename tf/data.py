@@ -147,19 +147,17 @@ def read_labeled_tfrecord(config, is_train, example):
 
     if config.crop_method == 'random':
         if is_train:
-            opt = tf.random.categorical(tf.math.log([[0.5, 0.5, 0.5]]), 1)
-            if opt == 0:
-                box_type = 'detic_box'
-            elif opt == 1:
-                box_type = 'yolov5_box'
-            else:
-                box_type = 'backfin_box'
+            r = tf.random.uniform([])
+            bb = tf.cond(r < 0.33,
+                        lambda: tf.cast(example['detic_box'], tf.int32),
+                        lambda: tf.cond(r < 0.66,
+                                       lambda: tf.cast(example['yolov5_box'], tf.int32),
+                                       lambda: tf.cast(example['backfin_box'], tf.int32)))
+            
         else:
-            box_type = 'detic_box'
+            bb = tf.cast(example['detic_box'], tf.int32)
     else:
-        box_type = config.crop_method
-
-    bb = tf.cast(example[box_type], tf.int32)
+        bb = tf.cast(example['detic_box'], tf.int32)
 
     if config.expand_box:
         image = decode_image_expand(example['image'], bb, config, is_train)
