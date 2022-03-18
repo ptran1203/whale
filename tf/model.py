@@ -10,7 +10,6 @@ from sklearn import metrics
 from sklearn.model_selection import KFold, train_test_split
 from tensorflow.keras import backend as K
 import json
-import tensorflow_hub as tfhub
 import tensorflow_addons as tfa
 from tf.losses import SparseCategoricalFocalLoss, categorical_focal_loss
 from datetime import datetime
@@ -265,6 +264,7 @@ def get_model_embed(config, strategy):
                     embed =  tf.concat([GeM()(x), tf.keras.layers.GlobalAveragePooling2D()(x)],axis = 1)
 
             elif config.model_type == 'effnetv2':
+                import tensorflow_hub as tfhub
                 # FEATURE_VECTOR = f'{config.EFFNETV2_ROOT}/efficientnet_v2_{config.EFF_NETV2}/feature_vector/2'
                 # embed = tfhub.KerasLayer(FEATURE_VECTOR, trainable=True)(inp)
                 hub_url, image_size = get_hub_url_and_isize(config.EFF_NETV2, '21k-ft1k', 'feature-vector')
