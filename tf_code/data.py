@@ -14,10 +14,12 @@ from tqdm.auto import tqdm
 import matplotlib.pyplot as plt
 import pickle
 import json
-import tensorflow_hub as tfhub
 from datetime import datetime
 from functools import partial
-from tf_code.auoaugment import distort_image
+try:
+    from tf_code.auoaugment import distort_image
+except Exception as e:
+    print(e)
 
 AUTO = tf.data.experimental.AUTOTUNE
 
