@@ -11,7 +11,7 @@ from sklearn.model_selection import KFold, train_test_split
 from tensorflow.keras import backend as K
 import json
 import tensorflow_addons as tfa
-from tf.losses import SparseCategoricalFocalLoss, categorical_focal_loss
+from tf_code.losses import SparseCategoricalFocalLoss, categorical_focal_loss
 from datetime import datetime
 
 n_species = 26

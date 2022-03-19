@@ -17,7 +17,7 @@ import json
 import tensorflow_hub as tfhub
 from datetime import datetime
 from functools import partial
-from tf.auoaugment import distort_image
+from tf_code.auoaugment import distort_image
 
 AUTO = tf.data.experimental.AUTOTUNE
 
