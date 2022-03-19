@@ -105,9 +105,9 @@ def decode_image(image_data, box, config):
 
 def decode_image_expand(image_data, box, config, is_train):
     if is_train:
-        expand_ratio = tf.constant(0.1, dtype=tf.float32)
-    else:
         expand_ratio = tf.random.uniform([], 0.0, 0.2)
+    else:
+        expand_ratio = tf.constant(0.1, dtype=tf.float32)
     if box is not None and box[0] != -1:
         image = tf.image.decode_jpeg(image_data, channels = 3)    
         shape = tf.shape(image)
@@ -120,9 +120,9 @@ def decode_image_expand(image_data, box, config, is_train):
         h_offset, w_offset = tf.cast(h_offset, tf.int32), tf.cast(w_offset, tf.int32)
         left, top = tf.maximum(left - w_offset, 0), tf.maximum(top - h_offset, 0)
         right, bottom = tf.minimum(right + w_offset, shape[1]), tf.minimum(bottom + h_offset, shape[0])
-        bbs = tf.convert_to_tensor([top, left, bottom - top, right - left])
+        # bbs = tf.convert_to_tensor([top, left, bottom - top, right - left])
         #image = tf.io.decode_and_crop_jpeg(image_data, bbs, channels=3)
-        image = tf.image.crop_to_bounding_box(image, top, left, bottom - top, right - left)
+        image = tf.cond(bottom > top, lambda: tf.image.crop_to_bounding_box(image, top, left, bottom - top, right - left), lambda: image)
     else:
         image = tf.image.decode_jpeg(image_data, channels = 3)   
 
@@ -137,13 +137,27 @@ def read_labeled_tfrecord(config, is_train, example):
         "image": tf.io.FixedLenFeature([], tf.string),
         "target": tf.io.FixedLenFeature([], tf.int64),
         "detic_box": tf.io.FixedLenFeature([4], tf.int64),
-        # "species": tf.io.FixedLenFeature([], tf.int64),
+        "yolov5_box": tf.io.FixedLenFeature([4], tf.int64),
+        "backfin_box": tf.io.FixedLenFeature([4], tf.int64),
         # "matches": tf.io.FixedLenFeature([], tf.string)
     }
 
     example = tf.io.parse_single_example(example, LABELED_TFREC_FORMAT)
     posting_id = example['image_name']
-    bb = tf.cast(example['detic_box'], tf.int32)
+
+    if config.crop_method == 'random':
+        if is_train:
+            r = tf.random.uniform([])
+            bb = tf.cond(r < 0.33,
+                        lambda: tf.cast(example['detic_box'], tf.int32),
+                        lambda: tf.cond(r < 0.66,
+                                       lambda: tf.cast(example['yolov5_box'], tf.int32),
+                                       lambda: tf.cast(example['backfin_box'], tf.int32)))
+            
+        else:
+            bb = tf.cast(example['detic_box'], tf.int32)
+    else:
+        bb = tf.cast(example[config.crop_method], tf.int32)
 
     if config.expand_box:
         image = decode_image_expand(example['image'], bb, config, is_train)

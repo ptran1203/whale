@@ -2,6 +2,7 @@ import itertools
 from typing import Any, Optional
 
 import tensorflow as tf
+from tensorflow.keras import backend as K
 
 _EPSILON = tf.keras.backend.epsilon()
 
@@ -128,3 +129,28 @@ class SparseCategoricalFocalLoss(tf.keras.losses.Loss):
                                              class_weight=self.class_weight,
                                              gamma=self.gamma,
                                              from_logits=self.from_logits)
+
+
+
+def categorical_focal_loss(gamma=2.0, alpha=0.25):
+    def focal_loss(y_true, y_pred):
+        # Define epsilon so that the backpropagation will not result in NaN
+        # for 0 divisor case
+        epsilon = K.epsilon()
+        # Add the epsilon to prediction value
+        #y_pred = y_pred + epsilon
+        # Clip the prediction value
+        y_pred = K.clip(y_pred, epsilon, 1.0-epsilon)
+        # Calculate cross entropy
+        y_true = tf.one_hot(y_true, depth=y_pred.shape[1], dtype=y_pred.dtype)
+        cross_entropy = -y_true*K.log(y_pred)
+        # Calculate weight that consists of  modulating factor and weighting factor
+        weight = alpha * y_true * K.pow((1-y_pred), gamma)
+        # Calculate focal loss
+        loss = weight * cross_entropy
+        # Sum the losses in mini_batch
+        loss = K.sum(loss, axis=1)
+        loss = tf.reduce_mean(loss)
+        return loss
+    
+    return focal_loss
