@@ -177,5 +177,6 @@ class CeLoss(tf.keras.losses.Loss):
         loss = self.ce(y_true, y_pred)
         if self.ohem:
             ohem_percent = 0.7
-            loss, _ = tf.math.top_k(loss, k=int(self.n_classes * ohem_percent))
+            _, indices = tf.math.top_k(loss, k=int(self.n_classes * ohem_percent))
+            loss = tf.gather(loss, indices, batch_dims=-1)
         return tf.reduce_mean(loss)

@@ -288,7 +288,8 @@ def get_model_embed(config, strategy):
             freeze_BN(model)
 
         if config.loss == 'ce':
-            loss_func = CeLoss(ohem, n_classes=15587)
+            # loss_func = CeLoss(ohem, n_classes=15587)
+            loss_func = tf.keras.losses.SparseCategoricalCrossentropy()
         elif config.loss == 'focal':
             # loss_func = SparseCategoricalFocalLoss(gamma=0.0)
             loss_func = categorical_focal_loss(gamma=2.0, alpha=1.0)
