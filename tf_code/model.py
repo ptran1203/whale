@@ -11,7 +11,7 @@ from sklearn.model_selection import KFold, train_test_split
 from tensorflow.keras import backend as K
 import json
 import tensorflow_addons as tfa
-from tf_code.losses import SparseCategoricalFocalLoss, categorical_focal_loss
+from tf_code.losses import SparseCategoricalFocalLoss, categorical_focal_loss, CeLoss
 from datetime import datetime
 
 n_species = 26
@@ -224,6 +224,7 @@ class GeM(tf.keras.layers.Layer):
             
 # Function to create our EfficientNetB3 model
 def get_model_embed(config, strategy):
+    ohem = getattr(config, 'ohem', 0.0)
     if config.head=='arcface':
         head = ArcMarginProduct
     else:
@@ -287,7 +288,7 @@ def get_model_embed(config, strategy):
             freeze_BN(model)
 
         if config.loss == 'ce':
-            loss_func = tf.keras.losses.SparseCategoricalCrossentropy()
+            loss_func = CeLoss(ohem, n_classes=15587)
         elif config.loss == 'focal':
             # loss_func = SparseCategoricalFocalLoss(gamma=0.0)
             loss_func = categorical_focal_loss(gamma=2.0, alpha=1.0)

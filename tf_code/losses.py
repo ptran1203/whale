@@ -1,5 +1,6 @@
 import itertools
 from typing import Any, Optional
+from cv2 import reduce
 
 import tensorflow as tf
 from tensorflow.keras import backend as K
@@ -154,3 +155,27 @@ def categorical_focal_loss(gamma=2.0, alpha=0.25):
         return loss
     
     return focal_loss
+
+
+class CeLoss(tf.keras.losses.Loss):
+    def __init__(self, ohem=False, n_classes=15587, class_weight: Optional[Any] = None,
+                 from_logits: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        self.ohem = ohem
+        self.class_weight = class_weight
+        self.n_classes = n_classes
+        self.from_logits = from_logits
+        self.ce = tf.keras.losses.SparseCategoricalCrossentropy(reduction=tf.keras.losses.Reduction.NONE)
+
+    def get_config(self):
+        config = super().get_config()
+        config.update(ohem=self.ohem, class_weight=self.class_weight,
+                      from_logits=self.from_logits)
+        return config
+
+    def call(self, y_true, y_pred):
+        loss = self.ce(y_true, y_pred)
+        if self.ohem:
+            ohem_percent = 0.7
+            loss, _ = tf.math.top_k(loss, k=int(self.n_classes * ohem_percent))
+        return tf.reduce_mean(loss)
