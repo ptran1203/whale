@@ -113,7 +113,8 @@ def decode_image_expand(image_data, box, config, is_train):
     if box is not None and box[0] != -1:
         image = tf.image.decode_jpeg(image_data, channels = 3)    
         shape = tf.shape(image)
-        left, top, right, bottom = box[0], box[1], box[2], box[3]
+        # left, top, right, bottom = box[0], box[1], box[2], box[3]
+        left, top, right, bottom = box[3], box[2], box[1], box[0]
         width, height = tf.cast(right - left, tf.float32), tf.cast(bottom - top, tf.float32)
         h_offset, w_offset = height * expand_ratio, width * expand_ratio
         # Make square
