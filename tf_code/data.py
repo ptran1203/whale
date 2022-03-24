@@ -91,10 +91,10 @@ def decode_image(image_data, box, config):
     # image = tf.image.decode_jpeg(image_data, channels = 3)
     # expand_ratio = tf.cast(0.1, tf.float32)
     if box is not None and box[0] != -1:
-        left, top, right, bottom = (bb[3] + tf.cast(O0, tf.int32),
-                                    bb[2] + tf.cast(O1, tf.int32),
-                                    bb[1] + tf.cast(O2, tf.int32),
-                                    bb[0] + tf.cast(O3, tf.int32))
+        left, top, right, bottom = (box[3] + tf.cast(O0, tf.int32),
+                                    box[2] + tf.cast(O1, tf.int32),
+                                    box[1] + tf.cast(O2, tf.int32),
+                                    box[0] + tf.cast(O3, tf.int32))
         # width, height = tf.cast(right - left, tf.float32), tf.cast(bottom - top, tf.float32)
         # h_offset, w_offet = tf.cast(height * expand_ratio, tf.int32), tf.cast(width * expand_ratio, tf.int32)
         # left, top = left - w_offet, top - h_offset
@@ -118,10 +118,10 @@ def decode_image_expand(image_data, box, config, is_train):
         image = tf.image.decode_jpeg(image_data, channels = 3)    
         shape = tf.shape(image)
         # left, top, right, bottom = box[0], box[1], box[2], box[3]
-        left, top, right, bottom = (bb[3] + tf.cast(O0, tf.int32),
-                                    bb[2] + tf.cast(O1, tf.int32),
-                                    bb[1] + tf.cast(O2, tf.int32),
-                                    bb[0] + tf.cast(O3, tf.int32))
+        left, top, right, bottom = (box[3] + tf.cast(O0, tf.int32),
+                                    box[2] + tf.cast(O1, tf.int32),
+                                    box[1] + tf.cast(O2, tf.int32),
+                                    box[0] + tf.cast(O3, tf.int32))
         width, height = tf.cast(right - left, tf.float32), tf.cast(bottom - top, tf.float32)
         h_offset, w_offset = height * expand_ratio, width * expand_ratio
         # Make square
