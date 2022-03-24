@@ -160,7 +160,7 @@ def read_labeled_tfrecord(config, is_train, example):
             r = tf.random.uniform([])
             bb = tf.cond(r <= 0.4,
                         lambda: tf.cast(example['backfin_box'], tf.int32),
-                        lambda: tf.cond(r <= 0.7,
+                        lambda: tf.cond(r <= 0.8,
                                        lambda: tf.cast(example['yolov5_box'], tf.int32),
                                        lambda: tf.cast(example['detic_box'], tf.int32)))
             
