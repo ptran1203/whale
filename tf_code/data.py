@@ -158,9 +158,9 @@ def read_labeled_tfrecord(config, is_train, example):
     if config.crop_method == 'random':
         if is_train:
             r = tf.random.uniform([])
-            bb = tf.cond(r <= 0.4,
+            bb = tf.cond(r <= 0.5,
                         lambda: tf.cast(example['backfin_box'], tf.int32),
-                        lambda: tf.cond(r <= 0.8,
+                        lambda: tf.cond(r <= 1.0,
                                        lambda: tf.cast(example['yolov5_box'], tf.int32),
                                        lambda: tf.cast(example['detic_box'], tf.int32)))
             
