@@ -71,7 +71,7 @@ def data_augment(config, posting_id, image, label_group, matches):
         image = tf.image.random_flip_left_right(image)
         # image = tf.image.random_jpeg_quality(image, 98, 100)
 
-        image = random_rot_shear(image, rot_limit=15, shear_limit=0,)
+        image = random_rot_shear(image, rot_limit=10, shear_limit=0,)
         image = tf.image.random_hue(image, 0.01)
         image = tf.image.random_saturation(image, 0.70, 1.30)
         image = tf.image.random_contrast(image, 0.80, 1.20)
@@ -125,7 +125,7 @@ def decode_image_expand(image_data, box, config, is_train):
         width, height = tf.cast(right - left, tf.float32), tf.cast(bottom - top, tf.float32)
         h_offset, w_offset = height * expand_ratio, width * expand_ratio
         # Make square
-        if is_train and tf.random.uniform([]) <= 0.25:
+        if is_train and tf.random.uniform([]) <= 0.2:
             h_offset += (width - height) / 2
         h_offset, w_offset = tf.cast(h_offset, tf.int32), tf.cast(w_offset, tf.int32)
         left, top = tf.maximum(left - w_offset, 0), tf.maximum(top - h_offset, 0)
@@ -160,7 +160,7 @@ def read_labeled_tfrecord(config, is_train, example):
             r = tf.random.uniform([])
             bb = tf.cond(r <= 0.4,
                         lambda: tf.cast(example['backfin_box'], tf.int32),
-                        lambda: tf.cond(r <= 0.7,
+                        lambda: tf.cond(r <= 0.8,
                                        lambda: tf.cast(example['yolov5_box'], tf.int32),
                                        lambda: tf.cast(example['detic_box'], tf.int32)))
             
