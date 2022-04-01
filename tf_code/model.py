@@ -258,7 +258,7 @@ def get_model_embed(config, strategy):
                 'densenet121': tf.keras.applications.densenet.DenseNet121,
                 'densenet169': tf.keras.applications.densenet.DenseNet169,
                 'densenet201': tf.keras.applications.densenet.DenseNet201,
-            }[model_type](include_top=False)(inp)
+            }[config.model_type](include_top=False)(inp)
             embed = tf.keras.layers.GlobalAveragePooling2D()(x)
         else:
             if config.model_type == 'effnetv1':
