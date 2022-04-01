@@ -245,7 +245,7 @@ def get_model_embed(config, strategy):
         label = tf.keras.layers.Input(shape = (), name = 'inp2')
         
         print(config.model_type)
-        if not config.model_type.startswith('effnet'):
+        if not config.model_type.startswith('effnet') or not config.model_type.lower().startswith('densenet'):
             import tfimm
             
             embed = tfimm.create_model(config.model_type, pretrained="timm")(inp)
@@ -253,6 +253,9 @@ def get_model_embed(config, strategy):
             #     embed = tf.keras.layers.GlobalAveragePooling2D()(x)
             # else:
             #     embed = GeM()(x)
+        elif config.model_type.lower().startswith('densenet121'):
+            x = tf.keras.applications.densenet.DenseNet121(include_top=False)(inp)
+            embed = tf.keras.layers.GlobalAveragePooling2D()(x)
         else:
             if config.model_type == 'effnetv1':
                 x = EFNS[config.EFF_NET](weights='noisy-student', include_top=False)(inp)
