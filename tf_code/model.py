@@ -245,7 +245,7 @@ def get_model_embed(config, strategy):
         label = tf.keras.layers.Input(shape = (), name = 'inp2')
         
         print(config.model_type)
-        if not config.model_type.startswith('effnet') or not config.model_type.lower().startswith('densenet'):
+        if not config.model_type.startswith('effnet') and not config.model_type.lower().startswith('densenet'):
             import tfimm
             
             embed = tfimm.create_model(config.model_type, pretrained="timm")(inp)
