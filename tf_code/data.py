@@ -146,7 +146,7 @@ def read_labeled_tfrecord(config, is_train, example):
         "image_name": tf.io.FixedLenFeature([], tf.string),
         "image": tf.io.FixedLenFeature([], tf.string),
         "target": tf.io.FixedLenFeature([], tf.int64),
-        "detic_box": tf.io.FixedLenFeature([4], tf.int64),
+        "yolov5_box2": tf.io.FixedLenFeature([4], tf.int64),
         "yolov5_box": tf.io.FixedLenFeature([4], tf.int64),
         "backfin_box1": tf.io.FixedLenFeature([4], tf.int64),
         "backfin_box2": tf.io.FixedLenFeature([4], tf.int64),
@@ -159,11 +159,13 @@ def read_labeled_tfrecord(config, is_train, example):
     if config.crop_method == 'random':
         if is_train:
             r = tf.random.uniform([])
-            bb = tf.cond(r <= 0.4,
+            bb = tf.cond(r <= 0.25,
                         lambda: tf.cast(example['yolov5_box'], tf.int32),
-                        lambda: tf.cond(r <= 0.9,
-                                       lambda: tf.cast(example['backfin_box1'], tf.int32),
-                                       lambda: tf.cast(example['backfin_box2'], tf.int32)))
+                        lambda: tf.cond(r <= 0.5,
+                                       lambda: tf.cast(example['yolov5_box2'], tf.int32),
+                                       lambda: tf.cond(r <= 0.75,
+                                                    lambda: tf.cast(example['backfin_box1'], tf.int32),
+                                                    lambda: tf.cast(example['backfin_box2'], tf.int32))))
             
         else:
             bb = tf.cast(example['yolov5_box'], tf.int32)
