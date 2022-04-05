@@ -223,7 +223,7 @@ class GeM(tf.keras.layers.Layer):
 
             
 # Function to create our EfficientNetB3 model
-def get_model_embed(config, strategy):
+def get_model_embed(config, strategy, is_train=True):
     ohem = getattr(config, 'ohem', 0.0)
     if config.head=='arcface':
         head = ArcMarginProduct
@@ -287,7 +287,7 @@ def get_model_embed(config, strategy):
         output = tf.keras.layers.Softmax(dtype='float32')(x)
         
         model = tf.keras.models.Model(inputs = [inp, label], outputs = [output])
-        # model = ModelGA(n_gradients = config.n_gradients, inputs = [inp, label], outputs = [output])
+        model_infer = tf.keras.models.Model(inputs = [inp], outputs = [output])
         embed_model = tf.keras.models.Model(inputs = inp, outputs = embed)  
         
         opt = tf.keras.optimizers.Adam(learning_rate = config.LR)
@@ -309,8 +309,11 @@ def get_model_embed(config, strategy):
             loss = [loss_func],
             metrics = [tf.keras.metrics.SparseCategoricalAccuracy(),tf.keras.metrics.SparseTopKCategoricalAccuracy(k=5)]
             ) 
-        
-        return model,embed_model
+
+        if is_train:        
+            return model, embed_model
+        else:
+            return model_infer, embed_model
 
 # architecture = "1headid"  #[embed, 1headid, 2heads]
 def get_model(cfg, strategy):
