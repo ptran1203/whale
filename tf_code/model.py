@@ -313,7 +313,7 @@ def get_model_embed(config, strategy, is_train=True):
         if is_train:        
             return model, embed_model
         else:
-            return model_infer, embed_model
+            return model, model_infer, embed_model
 
 # architecture = "1headid"  #[embed, 1headid, 2heads]
 def get_model(cfg, strategy):
