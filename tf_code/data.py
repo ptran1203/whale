@@ -125,7 +125,7 @@ def decode_image_expand(image_data, box, config, is_train):
         width, height = tf.cast(right - left, tf.float32), tf.cast(bottom - top, tf.float32)
         h_offset, w_offset = height * expand_ratio, width * expand_ratio
         # Make square
-        if is_train and tf.random.uniform([]) <= 0.2:
+        if is_train and tf.random.uniform([]) <= 0.1:
             h_offset += (width - height) / 2
         h_offset, w_offset = tf.cast(h_offset, tf.int32), tf.cast(w_offset, tf.int32)
         left, top = tf.maximum(left - w_offset, 0), tf.maximum(top - h_offset, 0)
