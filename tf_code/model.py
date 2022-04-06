@@ -287,7 +287,6 @@ def get_model_embed(config, strategy):
         output = tf.keras.layers.Softmax(dtype='float32')(x)
         
         model = tf.keras.models.Model(inputs = [inp, label], outputs = [output])
-        # model = ModelGA(n_gradients = config.n_gradients, inputs = [inp, label], outputs = [output])
         embed_model = tf.keras.models.Model(inputs = inp, outputs = embed)  
         
         opt = tf.keras.optimizers.Adam(learning_rate = config.LR)
@@ -309,8 +308,8 @@ def get_model_embed(config, strategy):
             loss = [loss_func],
             metrics = [tf.keras.metrics.SparseCategoricalAccuracy(),tf.keras.metrics.SparseTopKCategoricalAccuracy(k=5)]
             ) 
-        
-        return model,embed_model
+
+        return model, embed_model
 
 # architecture = "1headid"  #[embed, 1headid, 2heads]
 def get_model(cfg, strategy):
