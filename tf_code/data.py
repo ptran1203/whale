@@ -169,6 +169,27 @@ def read_labeled_tfrecord(config, is_train, example):
             
         else:
             bb = tf.cast(example['yolov5_box'], tf.int32)
+    
+    elif config.crop_method == 'random_body':
+        if is_train:
+            r = tf.random.uniform([])
+            bb = tf.cond(r <= 0.5,
+                        lambda: tf.cast(example['yolov5_box'], tf.int32),
+                        lambda: tf.cast(example['yolov5_box2'], tf.int32))
+            
+        else:
+            bb = tf.cast(example['yolov5_box'], tf.int32)
+
+    elif config.crop_method == 'random_whale':
+        if is_train:
+            r = tf.random.uniform([])
+            bb = tf.cond(r <= 0.5,
+                        lambda: tf.cast(example['backfin_box1'], tf.int32),
+                        lambda: tf.cast(example['backfin_box2'], tf.int32))
+            
+        else:
+            bb = tf.cast(example['backfin_box1'], tf.int32)
+
     else:
         bb = tf.cast(example[config.crop_method], tf.int32)
 
