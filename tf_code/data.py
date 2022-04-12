@@ -35,6 +35,7 @@ def arcface_eval_format(posting_id, image, label_group, matches):
     return image,label_group
 
 def random_rot_shear(img, rot_limit=10, shear_limit=10):
+    r = tf.random.uniform([])
     if rot_limit and r <= 0.15:
         rot_d = tf.random.uniform([], -rot_limit, rot_limit)
         img = tfa.image.rotate(img, rot_d * np.pi/180, fill_value=1.0)
