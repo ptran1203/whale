@@ -265,8 +265,8 @@ def get_model_embed(config, strategy):
             x = tf.keras.applications.resnet.preprocess_input(inp)
             x = {
                 'resnet50': tf.keras.applications.resnet.ResNet50,
-                'resnet101': tf.keras.applications.densenet.ResNet101,
-                'resnet152': tf.keras.applications.densenet.ResNet152,
+                'resnet101': tf.keras.applications.resnet.ResNet101,
+                'resnet152': tf.keras.applications.resnet.ResNet152,
             }[config.model_type](include_top=False)(x)
             embed = tf.keras.layers.GlobalAveragePooling2D()(x)
         else:
