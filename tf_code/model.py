@@ -260,6 +260,13 @@ def get_model_embed(config, strategy):
                 'densenet201': tf.keras.applications.densenet.DenseNet201,
             }[config.model_type](include_top=False)(inp)
             embed = tf.keras.layers.GlobalAveragePooling2D()(x)
+        elif config.model_type.lower().startswith('resnet'):
+            x = {
+                'resnet50': tf.keras.applications.resnet.ResNet50,
+                'resnet101': tf.keras.applications.densenet.ResNet101,
+                'resnet152': tf.keras.applications.densenet.ResNet152,
+            }[config.model_type](include_top=False)(inp)
+            embed = tf.keras.layers.GlobalAveragePooling2D()(x)
         else:
             if config.model_type == 'effnetv1':
                 x = EFNS[config.EFF_NET](weights='noisy-student', include_top=False)(inp)
