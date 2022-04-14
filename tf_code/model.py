@@ -254,18 +254,20 @@ def get_model_embed(config, strategy):
             # else:
             #     embed = GeM()(x)
         elif config.model_type.lower().startswith('densenet'):
+            x = tf.keras.applications.densenet.preprocess_input(inp)
             x = {
                 'densenet121': tf.keras.applications.densenet.DenseNet121,
                 'densenet169': tf.keras.applications.densenet.DenseNet169,
                 'densenet201': tf.keras.applications.densenet.DenseNet201,
-            }[config.model_type](include_top=False)(inp)
+            }[config.model_type](include_top=False)(x)
             embed = tf.keras.layers.GlobalAveragePooling2D()(x)
         elif config.model_type.lower().startswith('resnet'):
+            x = tf.keras.applications.resnet.preprocess_input(inp)
             x = {
                 'resnet50': tf.keras.applications.resnet.ResNet50,
                 'resnet101': tf.keras.applications.densenet.ResNet101,
                 'resnet152': tf.keras.applications.densenet.ResNet152,
-            }[config.model_type](include_top=False)(inp)
+            }[config.model_type](include_top=False)(x)
             embed = tf.keras.layers.GlobalAveragePooling2D()(x)
         else:
             if config.model_type == 'effnetv1':
