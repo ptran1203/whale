@@ -78,8 +78,15 @@ def data_augment(config, posting_id, image, label_group, matches):
         image = tf.image.random_contrast(image, 0.80, 1.20)
         image = tf.image.random_brightness(image, 0.2)
         if tf.random.uniform([]) <= 0.3:
-            image = tfa.image.gaussian_filter2d(image)
-        # image = gaussain_noise(image, p=0.1)
+            if tf.random.uniform([]) <= 0.5:
+                image = tfa.image.median_filter2d(image)
+            else:
+                image = tfa.image.gaussian_filter2d(image)
+        if tf.random.uniform([]) <= 0.1:
+            image = tf.image.grayscale_to_rgb(tf.image.rgb_to_grayscale(image))
+        if tf.random.uniform([]) <= 0.5:
+            tx, ty = tf.random.uniform([], -0.1, 0.1), tf.random.uniform([], -0.1, 0.1)
+            image = tfa.image.translate_xy(image, [tx * config.IMAGE_SIZE, ty * config.IMAGE_SIZE], 1.0)
     else:
         image = image * 255.0
         image = tf.clip_by_value(image, 0.0, 255.0)
