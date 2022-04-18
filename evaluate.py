@@ -30,6 +30,44 @@ def map_per_set(labels, predictions):
     """
     return np.mean([map_per_image(l, p) for l,p in zip(labels, predictions)])
 
+def get_center(vectors):
+    avg = np.mean(vectors, axis=0)
+    if avg.ndim == 1:
+        avg = avg / np.linalg.norm(avg)
+    elif avg.ndim == 2:
+        assert avg.shape[1] == 512
+        avg = avg / np.linalg.norm(avg, axis=1, keepdims=True)
+    else:
+        assert False, avg.shape
+    return avg
+
+def get_nearest_k(center, features, k, threshold):
+    feature_with_dis = [(feature, np.dot(center, feature)) for feature in features]
+    if len(feature_with_dis) > 10:
+        distances = np.array([dis for _, dis in feature_with_dis])
+
+    filtered = [feature for feature, dis in feature_with_dis if dis > threshold]
+    # if len(filtered) != len(feature_with_dis):
+    #     print('filterd ', len(filtered), len(feature_with_dis))
+    if len(filtered) < len(feature_with_dis):
+        distances = np.array([feature for feature, dis in feature_with_dis if dis <= threshold])
+    if len(filtered) > k:
+        return filtered
+    feature_with_dis = [feature for feature, dis in sorted(feature_with_dis, key=lambda v: v[1], reverse=True)]
+    return feature_with_dis[:k]
+
+def get_image_center(features):
+    if len(features) < 4:
+        return get_center(features)
+
+    for _ in range(3):
+        center = get_center(features)
+        features = get_nearest_k(center, features, int(len(features) * 3 / 4), 0.5)
+        # if len(features) < 4:
+        #     break
+
+    return get_center(features)
+
 
 def compute_sim(train_df, train_embs, test_embs, thr=0.65, norm=False):
     # Compute center of each individual id
@@ -39,37 +77,58 @@ def compute_sim(train_df, train_embs, test_embs, thr=0.65, norm=False):
             if img_id in train_embs:
                 label2emb[label].append(train_embs[img_id])
 
+    print(len(label2emb))
     for k, v in label2emb.items():
-        avg = np.mean(np.stack(v), 0)
-        label2emb[k] = avg / np.linalg.norm(avg)
+        # avg = np.mean(np.stack(v), 0)
+        # label2emb[k] = avg / np.linalg.norm(avg)
+        label2emb[k] = get_image_center(v)
 
     train_k, train_v = dict2list(label2emb)
     test_k, test_v = dict2list(test_embs)
 
     if norm:
-        # train_v = l2norm_numpy(train_v)
+        train_v = l2norm_numpy(train_v)
         test_v = l2norm_numpy(test_v)
 
     cos = np.matmul(test_v, train_v.T)
 
     records = []
+    res2 = {}
 
-    for i, scores in enumerate(tqdm(cos)):
-        sort_idx = np.argsort(scores)[::-1]
-        top5 = [train_k[j] for j in sort_idx[:5]]
-        # top5 = [train_map[x] for x in top5]
+    for thr in [thr]:
+        for i, scores in enumerate(tqdm(cos)):
+            sort_idx = np.argsort(scores)[::-1]
+            top5 = [train_k[j] for j in sort_idx[:5]]
+            top5_score = [scores[x] for x in sort_idx[:5]]
 
-        if scores[sort_idx[0]] < thr:
-            top5 = ['new_individual'] + top5[:4]
-        else:
-            top5 = top5[:1] + ['new_individual'] + top5[1:4]
-        
-        # print(test_k[i], [f"{train_k[j]}({scores[j]:.3f})" for j in sort_idx[:5]])
-        # print(scores[-1])
-        records.append([test_k[i], " ".join(top5)])
+            res2[test_k[i]] = {k:v for k, v in zip(top5, top5_score)}
 
-    sim_df = pd.DataFrame(records, columns=['image', 'predictions'])
-    return sim_df
+            if scores[sort_idx[0]] < thr:
+                top5 = ['new_individual'] + top5[:4]
+            else:
+                top5 = top5[:1] + ['new_individual'] + top5[1:4]
+            
+            # print(test_k[i], [f"{train_k[j]}({scores[j]:.3f})" for j in sort_idx[:5]])
+            # print(scores[-1])
+            records.append([test_k[i], " ".join(top5)])
+
+
+        sim_df = pd.DataFrame(records, columns=['image', 'predictions'])
+        isnew = sim_df.predictions.str.startswith('new')
+        # res2 = pd.DataFrame(res2, columns=['image', 'top5', 'score0', 'score1', 'score2', 'score3', 'score4'])
+        print(isnew.mean(), thr)
+    return sim_df, res2
+
+# valpred2, top5_map = compute_sim(train_df, train_embs, val_embs, thr=thr, norm=False)
+
+# all_preds = dict(zip(valpred2['image'], valpred2['predictions']))
+# th = 0.5
+# for i,row in val_targets_df.iterrows():
+#         target = row.target
+#         preds = all_preds[row.image].split(" ")
+#         val_targets_df.loc[i,th] = map_per_image(target,preds)
+# val_targets_df[th].mean()
+# # 0.8237222820939878
 
 
 def compute_simv2(train_df, train_embs, test_embs, thr=0.65, norm=False):
